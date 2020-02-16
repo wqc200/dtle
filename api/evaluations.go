@@ -1,9 +1,3 @@
-/*
- * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/hashicorp/nomad, github.com/github/gh-ost .
- * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
- */
-
 package api
 
 import (
@@ -61,26 +55,33 @@ func (e *Evaluations) Allocations(evalID string, q *QueryOptions) ([]*Allocation
 // Evaluation is used to serialize an evaluation.
 type Evaluation struct {
 	ID                   string
+	Priority             int
 	Type                 string
 	TriggeredBy          string
+	Namespace            string
 	JobID                string
 	JobModifyIndex       uint64
 	NodeID               string
 	NodeModifyIndex      uint64
+	DeploymentID         string
 	Status               string
 	StatusDescription    string
 	Wait                 time.Duration
+	WaitUntil            time.Time
 	NextEval             string
 	PreviousEval         string
 	BlockedEval          string
 	FailedTGAllocs       map[string]*AllocationMetric
 	ClassEligibility     map[string]bool
 	EscapedComputedClass bool
+	QuotaLimitReached    string
 	AnnotatePlan         bool
 	QueuedAllocations    map[string]int
 	SnapshotIndex        uint64
 	CreateIndex          uint64
 	ModifyIndex          uint64
+	CreateTime           int64
+	ModifyTime           int64
 }
 
 // EvalIndexSort is a wrapper to sort evaluations by CreateIndex.

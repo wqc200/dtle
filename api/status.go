@@ -1,12 +1,4 @@
-/*
- * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/hashicorp/nomad, github.com/github/gh-ost .
- * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
- */
-
 package api
-
-import "sort"
 
 // Status is used to query the status-related endpoints.
 type Status struct {
@@ -21,7 +13,7 @@ func (c *Client) Status() *Status {
 // Leader is used to query for the current cluster leader.
 func (s *Status) Leader() (string, error) {
 	var resp string
-	_, err := s.client.query("/v1/leader", &resp, nil)
+	_, err := s.client.query("/v1/status/leader", &resp, nil)
 	if err != nil {
 		return "", err
 	}
@@ -32,7 +24,7 @@ func (s *Status) Leader() (string, error) {
 func (s *Status) RegionLeader(region string) (string, error) {
 	var resp string
 	q := QueryOptions{Region: region}
-	_, err := s.client.query("/v1/leader", &resp, &q)
+	_, err := s.client.query("/v1/status/leader", &resp, &q)
 	if err != nil {
 		return "", err
 	}
@@ -43,19 +35,9 @@ func (s *Status) RegionLeader(region string) (string, error) {
 // in the cluster.
 func (s *Status) Peers() ([]string, error) {
 	var resp []string
-	_, err := s.client.query("/v1/peers", &resp, nil)
+	_, err := s.client.query("/v1/status/peers", &resp, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, nil
-}
-
-// List returns a list of all of the regions.
-func (s *Status) List() ([]string, error) {
-	var resp []string
-	if _, err := s.client.query("/v1/regions", &resp, nil); err != nil {
-		return nil, err
-	}
-	sort.Strings(resp)
 	return resp, nil
 }

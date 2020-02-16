@@ -1,17 +1,12 @@
-/*
- * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/hashicorp/nomad, github.com/github/gh-ost .
- * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
- */
-
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 )
 
-// Agent encapsulates an API client which talks to Udup's
+// Agent encapsulates an API client which talks to Nomad's
 // agent endpoints for a specific node.
 type Agent struct {
 	client *Client
@@ -22,26 +17,17 @@ type Agent struct {
 	region     string
 }
 
-// AgentCheck represents a check known to the agent
-type AgentCheck struct {
-	Node        string
-	CheckID     string
-	Name        string
-	Status      string
-	Notes       string
-	Output      string
-	ServiceID   string
-	ServiceName string
+// KeyringResponse is a unified key response and can be used for install,
+// remove, use, as well as listing key queries.
+type KeyringResponse struct {
+	Messages map[string]string
+	Keys     map[string]int
+	NumNodes int
 }
 
-// AgentService represents a service known to the agent
-type AgentService struct {
-	ID                string
-	Service           string
-	Tags              []string
-	Port              int
-	Address           string
-	EnableTagOverride bool
+// KeyringRequest is request objects for serf key operations.
+type KeyringRequest struct {
+	Key string
 }
 
 // Agent returns a new agent which can be used to query
@@ -50,13 +36,13 @@ func (c *Client) Agent() *Agent {
 	return &Agent{client: c}
 }
 
-// Self is used to query the /v1/self endpoint and
+// Self is used to query the /v1/agent/self endpoint and
 // returns information specific to the running agent.
 func (a *Agent) Self() (*AgentSelf, error) {
 	var out *AgentSelf
 
 	// Query the self endpoint on the agent
-	_, err := a.client.query("/v1/self", &out, nil)
+	_, err := a.client.query("/v1/agent/self", &out, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed querying self endpoint: %s", err)
 	}
@@ -86,7 +72,7 @@ func (a *Agent) populateCache(self *AgentSelf) {
 	}
 }
 
-// NodeName is used to query the Udup agent for its node name.
+// NodeName is used to query the Nomad agent for its node name.
 func (a *Agent) NodeName() (string, error) {
 	// Return from cache if we have it
 	if a.nodeName != "" {
@@ -123,12 +109,36 @@ func (a *Agent) Region() (string, error) {
 	return a.region, err
 }
 
+// Join is used to instruct a server node to join another server
+// via the gossip protocol. Multiple addresses may be specified.
+// We attempt to join all of the hosts in the list. Returns the
+// number of nodes successfully joined and any error. If one or
+// more nodes have a successful result, no error is returned.
+func (a *Agent) Join(addrs ...string) (int, error) {
+	// Accumulate the addresses
+	v := url.Values{}
+	for _, addr := range addrs {
+		v.Add("address", addr)
+	}
+
+	// Send the join request
+	var resp joinResponse
+	_, err := a.client.write("/v1/agent/join?"+v.Encode(), nil, &resp, nil)
+	if err != nil {
+		return 0, fmt.Errorf("failed joining: %s", err)
+	}
+	if resp.Error != "" {
+		return 0, fmt.Errorf("failed joining: %s", resp.Error)
+	}
+	return resp.NumJoined, nil
+}
+
 // Members is used to query all of the known server members
 func (a *Agent) Members() (*ServerMembers, error) {
 	var resp *ServerMembers
 
 	// Query the known members
-	_, err := a.client.query("/v1/members", &resp, nil)
+	_, err := a.client.query("/v1/agent/members", &resp, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +154,7 @@ func (a *Agent) ForceLeave(node string) error {
 // Servers is used to query the list of servers on a client node.
 func (a *Agent) Servers() ([]string, error) {
 	var resp []string
-	_, err := a.client.query("/v1/servers", &resp, nil)
+	_, err := a.client.query("/v1/agent/servers", &resp, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -159,8 +169,72 @@ func (a *Agent) SetServers(addrs []string) error {
 		v.Add("address", addr)
 	}
 
-	_, err := a.client.write("/v1/servers?"+v.Encode(), nil, nil, nil)
+	_, err := a.client.write("/v1/agent/servers?"+v.Encode(), nil, nil, nil)
 	return err
+}
+
+// ListKeys returns the list of installed keys
+func (a *Agent) ListKeys() (*KeyringResponse, error) {
+	var resp KeyringResponse
+	_, err := a.client.query("/v1/agent/keyring/list", &resp, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// InstallKey installs a key in the keyrings of all the serf members
+func (a *Agent) InstallKey(key string) (*KeyringResponse, error) {
+	args := KeyringRequest{
+		Key: key,
+	}
+	var resp KeyringResponse
+	_, err := a.client.write("/v1/agent/keyring/install", &args, &resp, nil)
+	return &resp, err
+}
+
+// UseKey uses a key from the keyring of serf members
+func (a *Agent) UseKey(key string) (*KeyringResponse, error) {
+	args := KeyringRequest{
+		Key: key,
+	}
+	var resp KeyringResponse
+	_, err := a.client.write("/v1/agent/keyring/use", &args, &resp, nil)
+	return &resp, err
+}
+
+// RemoveKey removes a particular key from keyrings of serf members
+func (a *Agent) RemoveKey(key string) (*KeyringResponse, error) {
+	args := KeyringRequest{
+		Key: key,
+	}
+	var resp KeyringResponse
+	_, err := a.client.write("/v1/agent/keyring/remove", &args, &resp, nil)
+	return &resp, err
+}
+
+// Health queries the agent's health
+func (a *Agent) Health() (*AgentHealthResponse, error) {
+	req, err := a.client.newRequest("GET", "/v1/agent/health")
+	if err != nil {
+		return nil, err
+	}
+
+	var health AgentHealthResponse
+	_, resp, err := a.client.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// Always try to decode the response as JSON
+	err = json.NewDecoder(resp.Body).Decode(&health)
+	if err == nil {
+		return &health, nil
+	}
+
+	// Return custom error when response is not expected JSON format
+	return nil, fmt.Errorf("unable to unmarshal response with status %d: %v", resp.StatusCode, err)
 }
 
 // joinResponse is used to decode the response we get while
@@ -215,4 +289,20 @@ func (a AgentMembersNameSort) Less(i, j int) bool {
 
 	return a[i].Name < a[j].Name
 
+}
+
+// AgentHealthResponse is the response from the Health endpoint describing an
+// agent's health.
+type AgentHealthResponse struct {
+	Client *AgentHealth `json:"client,omitempty"`
+	Server *AgentHealth `json:"server,omitempty"`
+}
+
+// AgentHealth describes the Client or Server's health in a Health request.
+type AgentHealth struct {
+	// Ok is false if the agent is unhealthy
+	Ok bool `json:"ok"`
+
+	// Message describes why the agent is unhealthy
+	Message string `json:"message"`
 }
