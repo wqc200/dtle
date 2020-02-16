@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/actiontech/dtle/client/stats"
+	"github.com/actiontech/dtle/nomad/structs"
 	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/client/stats"
-	"github.com/hashicorp/nomad/nomad/structs"
 )
 
 const (

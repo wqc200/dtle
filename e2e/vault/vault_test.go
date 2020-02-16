@@ -15,12 +15,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/actiontech/dtle/command/agent"
+	"github.com/actiontech/dtle/helper"
+	"github.com/actiontech/dtle/nomad/structs/config"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
 	"github.com/actiontech/dtle/nomad/vendor/golang.org/x/sync/errgroup"
-	"github.com/hashicorp/nomad/command/agent"
-	"github.com/hashicorp/nomad/helper"
-	"github.com/hashicorp/nomad/nomad/structs/config"
-	"github.com/hashicorp/nomad/testutil"
+	"github.com/actiontech/dtle/testutil"
 
 	vapi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/vault/api"
 )

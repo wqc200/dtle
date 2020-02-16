@@ -6,9 +6,9 @@ import (
 
 	log "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
 
+	"github.com/actiontech/dtle/command/agent/consul"
+	"github.com/actiontech/dtle/nomad/structs"
 	testing "github.com/actiontech/dtle/nomad/vendor/github.com/mitchellh/go-testing-interface"
-	"github.com/hashicorp/nomad/command/agent/consul"
-	"github.com/hashicorp/nomad/nomad/structs"
 )
 
 // MockConsulOp represents the register/deregister operations.

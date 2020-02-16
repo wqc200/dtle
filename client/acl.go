@@ -3,10 +3,10 @@ package client
 import (
 	"time"
 
+	"github.com/actiontech/dtle/acl"
+	"github.com/actiontech/dtle/nomad/structs"
 	metrics "github.com/actiontech/dtle/nomad/vendor/github.com/armon/go-metrics"
 	lru "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/golang-lru"
-	"github.com/hashicorp/nomad/acl"
-	"github.com/hashicorp/nomad/nomad/structs"
 )
 
 const (

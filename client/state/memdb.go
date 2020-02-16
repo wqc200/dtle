@@ -3,11 +3,11 @@ package state
 import (
 	"sync"
 
+	"github.com/actiontech/dtle/client/allocrunner/taskrunner/state"
+	dmstate "github.com/actiontech/dtle/client/devicemanager/state"
+	driverstate "github.com/actiontech/dtle/client/pluginmanager/drivermanager/state"
+	"github.com/actiontech/dtle/nomad/structs"
 	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/client/allocrunner/taskrunner/state"
-	dmstate "github.com/hashicorp/nomad/client/devicemanager/state"
-	driverstate "github.com/hashicorp/nomad/client/pluginmanager/drivermanager/state"
-	"github.com/hashicorp/nomad/nomad/structs"
 )
 
 // MemDB implements a StateDB that stores data in memory and should only be

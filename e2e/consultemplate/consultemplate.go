@@ -3,13 +3,13 @@ package consultemplate
 import (
 	"time"
 
+	"github.com/actiontech/dtle/e2e/framework"
+	"github.com/actiontech/dtle/helper"
+	"github.com/actiontech/dtle/helper/uuid"
+	"github.com/actiontech/dtle/jobspec"
+	"github.com/actiontech/dtle/nomad/structs"
 	capi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/e2e/framework"
-	"github.com/hashicorp/nomad/helper"
-	"github.com/hashicorp/nomad/helper/uuid"
-	"github.com/hashicorp/nomad/jobspec"
-	"github.com/hashicorp/nomad/nomad/structs"
 
 	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/gomega"
 )

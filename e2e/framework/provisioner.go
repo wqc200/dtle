@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	napi "github.com/actiontech/dtle/api"
+	"github.com/actiontech/dtle/helper/uuid"
 	capi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
 	vapi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/vault/api"
-	napi "github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/helper/uuid"
 )
 
 // ProvisionerOptions defines options to be given to the Provisioner when calling

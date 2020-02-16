@@ -6,14 +6,14 @@ import (
 	"reflect"
 	"testing"
 
+	trstate "github.com/actiontech/dtle/client/allocrunner/taskrunner/state"
+	dmstate "github.com/actiontech/dtle/client/devicemanager/state"
+	driverstate "github.com/actiontech/dtle/client/pluginmanager/drivermanager/state"
+	"github.com/actiontech/dtle/helper/testlog"
+	"github.com/actiontech/dtle/nomad/mock"
+	"github.com/actiontech/dtle/nomad/structs"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/kr/pretty"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	trstate "github.com/hashicorp/nomad/client/allocrunner/taskrunner/state"
-	dmstate "github.com/hashicorp/nomad/client/devicemanager/state"
-	driverstate "github.com/hashicorp/nomad/client/pluginmanager/drivermanager/state"
-	"github.com/hashicorp/nomad/helper/testlog"
-	"github.com/hashicorp/nomad/nomad/mock"
-	"github.com/hashicorp/nomad/nomad/structs"
 )
 
 func setupBoltStateDB(t *testing.T) (*BoltStateDB, func()) {

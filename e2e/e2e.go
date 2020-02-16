@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/nomad/e2e/framework"
+	"github.com/actiontech/dtle/e2e/framework"
 )
 
 func RunE2ETests(t *testing.T) {

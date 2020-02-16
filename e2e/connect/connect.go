@@ -5,14 +5,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/actiontech/dtle/api"
+	"github.com/actiontech/dtle/e2e/e2eutil"
+	"github.com/actiontech/dtle/e2e/framework"
+	"github.com/actiontech/dtle/helper/uuid"
+	"github.com/actiontech/dtle/jobspec"
 	consulapi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/kr/pretty"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/e2e/e2eutil"
-	"github.com/hashicorp/nomad/e2e/framework"
-	"github.com/hashicorp/nomad/helper/uuid"
-	"github.com/hashicorp/nomad/jobspec"
 )
 
 type ConnectE2ETest struct {
@@ -52,7 +52,7 @@ func (tc *ConnectE2ETest) AfterEach(f *framework.F) {
 // TestConnectDemo tests the demo job file from the Consul Connect Technology
 // Preview.
 //
-// https://github.com/hashicorp/nomad/blob/v0.9.5/website/source/guides/integrations/consul-connect/index.html.md#run-the-connect-enabled-services
+// https://github.com/actiontech/dtle/blob/v0.9.5/website/source/guides/integrations/consul-connect/index.html.md#run-the-connect-enabled-services
 //
 func (tc *ConnectE2ETest) TestConnectDemo(f *framework.F) {
 	t := f.T()

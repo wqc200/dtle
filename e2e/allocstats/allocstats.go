@@ -1,17 +1,17 @@
 package allocstats
 
 import (
+	"github.com/actiontech/dtle/e2e/framework"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/e2e/framework"
 
 	"fmt"
 
 	"time"
 
-	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/e2e/e2eutil"
-	"github.com/hashicorp/nomad/helper/uuid"
-	"github.com/hashicorp/nomad/testutil"
+	"github.com/actiontech/dtle/api"
+	"github.com/actiontech/dtle/e2e/e2eutil"
+	"github.com/actiontech/dtle/helper/uuid"
+	"github.com/actiontech/dtle/testutil"
 )
 
 type BasicAllocStatsTest struct {

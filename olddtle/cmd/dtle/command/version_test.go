@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/hashicorp/nomad, github.com/github/gh-ost .
+ * Based on: github.com/actiontech/dtle, github.com/github/gh-ost .
  * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
  */
 
@@ -58,7 +58,7 @@ func TestVersionCommand_Run(t *testing.T) {
 		args   args
 		want   int
 	}{
-		// TODO: Add test cases.
+	// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -87,7 +87,7 @@ func TestVersionCommand_Synopsis(t *testing.T) {
 		fields fields
 		want   string
 	}{
-		// TODO: Add test cases.
+	// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1,11 +1,11 @@
 package affinities
 
 import (
+	"github.com/actiontech/dtle/e2e/framework"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/e2e/framework"
 
-	"github.com/hashicorp/nomad/e2e/e2eutil"
-	"github.com/hashicorp/nomad/helper/uuid"
+	"github.com/actiontech/dtle/e2e/e2eutil"
+	"github.com/actiontech/dtle/helper/uuid"
 )
 
 type BasicAffinityTest struct {

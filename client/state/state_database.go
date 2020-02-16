@@ -8,12 +8,12 @@ import (
 
 	"github.com/actiontech/dtle/nomad/vendor/github.com/boltdb/bolt"
 
+	trstate "github.com/actiontech/dtle/client/allocrunner/taskrunner/state"
+	dmstate "github.com/actiontech/dtle/client/devicemanager/state"
+	driverstate "github.com/actiontech/dtle/client/pluginmanager/drivermanager/state"
+	"github.com/actiontech/dtle/helper/boltdd"
+	"github.com/actiontech/dtle/nomad/structs"
 	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
-	trstate "github.com/hashicorp/nomad/client/allocrunner/taskrunner/state"
-	dmstate "github.com/hashicorp/nomad/client/devicemanager/state"
-	driverstate "github.com/hashicorp/nomad/client/pluginmanager/drivermanager/state"
-	"github.com/hashicorp/nomad/helper/boltdd"
-	"github.com/hashicorp/nomad/nomad/structs"
 )
 
 /*

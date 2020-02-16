@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
+	"github.com/actiontech/dtle/e2e/cli/command"
 	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/mitchellh/cli"
-	"github.com/hashicorp/nomad/e2e/cli/command"
 )
 
 const (

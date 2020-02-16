@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/actiontech/dtle/helper/discover"
 	getter "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-getter"
-	"github.com/hashicorp/nomad/helper/discover"
 )
 
 // fetchBinary fetches the nomad binary and returns the temporary directory where it exists

@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/actiontech/dtle/api"
+	"github.com/actiontech/dtle/e2e/e2eutil"
+	"github.com/actiontech/dtle/helper/uuid"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/e2e/e2eutil"
-	"github.com/hashicorp/nomad/helper/uuid"
 )
 
 var metrics = flag.Bool("metrics", false, "run metrics tests")

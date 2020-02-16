@@ -239,7 +239,7 @@ func (opts *runOpts) goArgs() []string {
 	}
 
 	a = append(a, []string{
-		"github.com/hashicorp/nomad/e2e",
+		"github.com/actiontech/dtle/e2e",
 		"-env=" + opts.env,
 		"-env.provider=" + opts.provider,
 	}...)

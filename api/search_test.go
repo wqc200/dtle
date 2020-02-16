@@ -3,8 +3,8 @@ package api
 import (
 	"testing"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/api/contexts"
+	"github.com/actiontech/dtle/api/contexts"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSearch_List(t *testing.T) {

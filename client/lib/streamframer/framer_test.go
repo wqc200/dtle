@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/nomad/testutil"
+	"github.com/actiontech/dtle/testutil"
 	"github.com/kr/pretty"
 )
 

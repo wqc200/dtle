@@ -12,7 +12,7 @@ When making local changes, use `./bin/update $(which nomad) /usr/local/bin/nomad
 
 Provisioning
 ============
-You'll need AWS credentials (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`) to create the Nomad cluster. See the [README](https://github.com/hashicorp/nomad/blob/master/e2e/terraform/README.md) for details. The number of servers and clients is configurable, as is the configuration file for each client and server.
+You'll need AWS credentials (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`) to create the Nomad cluster. See the [README](https://github.com/actiontech/dtle/blob/master/e2e/terraform/README.md) for details. The number of servers and clients is configurable, as is the configuration file for each client and server.
 
 Running
 ===========

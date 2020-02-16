@@ -3,8 +3,8 @@
 package stats
 
 import (
+	shelpers "github.com/actiontech/dtle/helper/stats"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/cpu"
-	shelpers "github.com/hashicorp/nomad/helper/stats"
 )
 
 func (h *HostStatsCollector) collectCPUStats() (cpus []*CPUStats, totalTicks float64, err error) {

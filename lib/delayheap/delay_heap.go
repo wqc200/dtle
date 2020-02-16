@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/actiontech/dtle/nomad/structs"
 )
 
 // DelayHeap wraps a heap and gives operations other than Push/Pop.

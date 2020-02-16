@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/nomad/api/internal/testutil"
+	"github.com/actiontech/dtle/api/internal/testutil"
 )
 
 func TestRegionsList(t *testing.T) {

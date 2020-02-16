@@ -1,7 +1,7 @@
 package example
 
 import (
-	"github.com/hashicorp/nomad/e2e/framework"
+	"github.com/actiontech/dtle/e2e/framework"
 )
 
 func init() {

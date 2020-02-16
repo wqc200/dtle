@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/actiontech/dtle/helper/boltdd"
+	"github.com/actiontech/dtle/helper/testlog"
+	"github.com/actiontech/dtle/helper/uuid"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/boltdb/bolt"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/helper/boltdd"
-	"github.com/hashicorp/nomad/helper/testlog"
-	"github.com/hashicorp/nomad/helper/uuid"
 )
 
 func setupBoltDB(t *testing.T) (*bolt.DB, func()) {

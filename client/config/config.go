@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/actiontech/dtle/client/state"
+	"github.com/actiontech/dtle/helper"
+	"github.com/actiontech/dtle/helper/pluginutils/loader"
+	"github.com/actiontech/dtle/nomad/structs"
+	"github.com/actiontech/dtle/nomad/structs/config"
 	log "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/client/state"
-	"github.com/hashicorp/nomad/helper"
-	"github.com/hashicorp/nomad/helper/pluginutils/loader"
-	"github.com/hashicorp/nomad/nomad/structs"
-	"github.com/hashicorp/nomad/nomad/structs/config"
-	"github.com/hashicorp/nomad/plugins/base"
-	"github.com/hashicorp/nomad/version"
+	"github.com/actiontech/dtle/plugins/base"
+	"github.com/actiontech/dtle/version"
 )
 
 var (

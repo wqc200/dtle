@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/actiontech/dtle/helper"
+	"github.com/actiontech/dtle/helper/testlog"
+	"github.com/actiontech/dtle/nomad/mock"
 	testing "github.com/actiontech/dtle/nomad/vendor/github.com/mitchellh/go-testing-interface"
-	"github.com/hashicorp/nomad/helper"
-	"github.com/hashicorp/nomad/helper/testlog"
-	"github.com/hashicorp/nomad/nomad/mock"
 )
 
 // TestClientConfig returns a default client configuration for test clients and

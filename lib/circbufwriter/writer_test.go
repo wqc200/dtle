@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/hashicorp/nomad/testutil"
+	"github.com/actiontech/dtle/testutil"
 	"github.com/stretchr/testify/require"
 )
 

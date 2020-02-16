@@ -3,9 +3,9 @@ package framework
 import (
 	"testing"
 
+	"github.com/actiontech/dtle/helper/uuid"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/helper/uuid"
 )
 
 // F is the framework context that is passed to each test.

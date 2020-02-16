@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
-	"github.com/hashicorp/nomad/testutil"
+	"github.com/actiontech/dtle/testutil"
 )
 
 var integration = flag.Bool("integration", false, "run integration tests")

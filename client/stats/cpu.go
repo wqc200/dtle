@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"time"
 
-	shelpers "github.com/hashicorp/nomad/helper/stats"
+	shelpers "github.com/actiontech/dtle/helper/stats"
 )
 
 // CpuStats calculates cpu usage percentage

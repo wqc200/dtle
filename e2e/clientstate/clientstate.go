@@ -13,15 +13,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/client/state"
-	"github.com/hashicorp/nomad/e2e/e2eutil"
-	"github.com/hashicorp/nomad/e2e/execagent"
-	"github.com/hashicorp/nomad/e2e/framework"
-	"github.com/hashicorp/nomad/helper/discover"
-	"github.com/hashicorp/nomad/helper/testlog"
-	"github.com/hashicorp/nomad/helper/uuid"
-	"github.com/hashicorp/nomad/testutil"
+	"github.com/actiontech/dtle/api"
+	"github.com/actiontech/dtle/client/state"
+	"github.com/actiontech/dtle/e2e/e2eutil"
+	"github.com/actiontech/dtle/e2e/execagent"
+	"github.com/actiontech/dtle/e2e/framework"
+	"github.com/actiontech/dtle/helper/discover"
+	"github.com/actiontech/dtle/helper/testlog"
+	"github.com/actiontech/dtle/helper/uuid"
+	"github.com/actiontech/dtle/testutil"
 )
 
 func init() {

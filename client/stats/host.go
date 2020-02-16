@@ -12,7 +12,7 @@ import (
 	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/disk"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/host"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/mem"
-	"github.com/hashicorp/nomad/plugins/device"
+	"github.com/actiontech/dtle/plugins/device"
 )
 
 // HostStats represents resource usage stats of the host running a Nomad client

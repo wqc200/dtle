@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/actiontech/dtle/api"
+	"github.com/actiontech/dtle/e2e/e2eutil"
+	"github.com/actiontech/dtle/e2e/framework"
+	"github.com/actiontech/dtle/helper/uuid"
 	capi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/e2e/e2eutil"
-	"github.com/hashicorp/nomad/e2e/framework"
-	"github.com/hashicorp/nomad/helper/uuid"
 )
 
 type ScriptChecksE2ETest struct {

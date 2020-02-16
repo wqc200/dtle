@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/actiontech/dtle/api"
+	"github.com/actiontech/dtle/helper"
+	"github.com/actiontech/dtle/jobspec"
+	"github.com/actiontech/dtle/nomad/structs"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/kr/pretty"
 	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/gomega"
 	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/helper"
-	"github.com/hashicorp/nomad/jobspec"
-	"github.com/hashicorp/nomad/nomad/structs"
-	"github.com/hashicorp/nomad/testutil"
+	"github.com/actiontech/dtle/testutil"
 )
 
 // retries is used to control how many times to retry checking if the cluster has a leader yet

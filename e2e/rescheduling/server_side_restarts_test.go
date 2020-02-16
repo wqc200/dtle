@@ -4,14 +4,14 @@ import (
 	"sort"
 	"time"
 
+	"github.com/actiontech/dtle/api"
+	"github.com/actiontech/dtle/jobspec"
 	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/ginkgo"
 	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/gomega"
-	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/jobspec"
 
-	"github.com/hashicorp/nomad/helper"
-	"github.com/hashicorp/nomad/helper/uuid"
-	"github.com/hashicorp/nomad/nomad/structs"
+	"github.com/actiontech/dtle/helper"
+	"github.com/actiontech/dtle/helper/uuid"
+	"github.com/actiontech/dtle/nomad/structs"
 )
 
 var _ = Describe("Server Side Restart Tests", func() {

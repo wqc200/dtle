@@ -1,8 +1,8 @@
 package vault
 
 import (
-	"github.com/hashicorp/nomad/api"
-	"github.com/hashicorp/nomad/helper"
+	"github.com/actiontech/dtle/api"
+	"github.com/actiontech/dtle/helper"
 )
 
 const (

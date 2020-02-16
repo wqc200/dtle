@@ -3,7 +3,7 @@
 Boiler-plate to securely [seed](https://en.wikipedia.org/wiki/Random_seed) Go's
 random number generator (if possible).  This library isn't anything fancy, it's
 just a canonical way of seeding Go's random number generator. Cribbed from
-[`Nomad`](https://github.com/hashicorp/nomad/commit/f89a993ec6b91636a3384dd568898245fbc273a1)
+[`Nomad`](https://github.com/actiontech/dtle/commit/f89a993ec6b91636a3384dd568898245fbc273a1)
 before it was moved into
 [`Consul`](https://github.com/hashicorp/consul/commit/d695bcaae6e31ee307c11fdf55bb0bf46ea9fcf4)
 and made into a helper function, and now further modularized to be a super
