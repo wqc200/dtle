@@ -22,9 +22,9 @@ import (
 	"github.com/actiontech/dtle/helper/boltdd"
 	"github.com/actiontech/dtle/helper/testlog"
 	"github.com/actiontech/dtle/nomad/structs"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
 	pstructs "github.com/actiontech/dtle/plugins/shared/structs"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestBoltStateDB_Upgrade_Ok asserts upgading an old state db does not error

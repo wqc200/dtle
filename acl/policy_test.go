@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParse(t *testing.T) {

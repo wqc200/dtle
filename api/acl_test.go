@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestACLPolicies_ListUpsert(t *testing.T) {

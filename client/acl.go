@@ -5,8 +5,8 @@ import (
 
 	"github.com/actiontech/dtle/acl"
 	"github.com/actiontech/dtle/nomad/structs"
-	metrics "github.com/actiontech/dtle/nomad/vendor/github.com/armon/go-metrics"
-	lru "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/golang-lru"
+	metrics "github.com/armon/go-metrics"
+	lru "github.com/hashicorp/golang-lru"
 )
 
 const (

@@ -5,7 +5,7 @@ package api
 import (
 	"testing"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNamespaces_Register(t *testing.T) {

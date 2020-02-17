@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/actiontech/dtle/api/internal/testutil"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNodes_List(t *testing.T) {

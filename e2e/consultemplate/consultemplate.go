@@ -8,10 +8,10 @@ import (
 	"github.com/actiontech/dtle/helper/uuid"
 	"github.com/actiontech/dtle/jobspec"
 	"github.com/actiontech/dtle/nomad/structs"
-	capi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	capi "github.com/hashicorp/consul/api"
+	"github.com/stretchr/testify/require"
 
-	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 type ConsulTemplateTest struct {

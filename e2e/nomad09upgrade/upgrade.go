@@ -17,9 +17,9 @@ import (
 	"github.com/actiontech/dtle/helper/discover"
 	"github.com/actiontech/dtle/helper/testlog"
 	"github.com/actiontech/dtle/helper/uuid"
-	getter "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-getter"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
 	"github.com/actiontech/dtle/testutil"
+	getter "github.com/hashicorp/go-getter"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {

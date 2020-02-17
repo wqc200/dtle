@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"sync"
 
-	log "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
+	log "github.com/hashicorp/go-hclog"
 
 	"github.com/actiontech/dtle/command/agent/consul"
 	"github.com/actiontech/dtle/nomad/structs"
-	testing "github.com/actiontech/dtle/nomad/vendor/github.com/mitchellh/go-testing-interface"
+	testing "github.com/mitchellh/go-testing-interface"
 )
 
 // MockConsulOp represents the register/deregister operations.

@@ -3,7 +3,7 @@ package stats
 import (
 	"testing"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/cpu"
 )
 
 func TestHostCpuStatsCalculator_Nan(t *testing.T) {

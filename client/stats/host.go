@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/cpu"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/disk"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/host"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/mem"
 	"github.com/actiontech/dtle/plugins/device"
+	hclog "github.com/hashicorp/go-hclog"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/disk"
+	"github.com/shirou/gopsutil/host"
+	"github.com/shirou/gopsutil/mem"
 )
 
 // HostStats represents resource usage stats of the host running a Nomad client

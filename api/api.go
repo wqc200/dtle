@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/gorilla/websocket"
-	cleanhttp "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-cleanhttp"
-	rootcerts "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-rootcerts"
+	"github.com/gorilla/websocket"
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	rootcerts "github.com/hashicorp/go-rootcerts"
 )
 
 var (

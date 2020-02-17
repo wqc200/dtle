@@ -9,10 +9,10 @@ import (
 	"github.com/actiontech/dtle/helper"
 	"github.com/actiontech/dtle/jobspec"
 	"github.com/actiontech/dtle/nomad/structs"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/kr/pretty"
-	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/gomega"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
 	"github.com/actiontech/dtle/testutil"
+	"github.com/kr/pretty"
+	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/require"
 )
 
 // retries is used to control how many times to retry checking if the cluster has a leader yet

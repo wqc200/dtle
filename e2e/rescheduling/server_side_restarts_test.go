@@ -6,8 +6,8 @@ import (
 
 	"github.com/actiontech/dtle/api"
 	"github.com/actiontech/dtle/jobspec"
-	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/ginkgo"
-	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/gomega"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
 	"github.com/actiontech/dtle/helper"
 	"github.com/actiontech/dtle/helper/uuid"

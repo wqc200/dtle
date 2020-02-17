@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFormatRoundedFloat(t *testing.T) {

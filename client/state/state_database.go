@@ -6,14 +6,14 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/boltdb/bolt"
+	"github.com/boltdb/bolt"
 
 	trstate "github.com/actiontech/dtle/client/allocrunner/taskrunner/state"
 	dmstate "github.com/actiontech/dtle/client/devicemanager/state"
 	driverstate "github.com/actiontech/dtle/client/pluginmanager/drivermanager/state"
 	"github.com/actiontech/dtle/helper/boltdd"
 	"github.com/actiontech/dtle/nomad/structs"
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
+	hclog "github.com/hashicorp/go-hclog"
 )
 
 /*

@@ -13,9 +13,9 @@ import (
 	"github.com/actiontech/dtle/helper/pluginutils/loader"
 	"github.com/actiontech/dtle/nomad/structs"
 	"github.com/actiontech/dtle/nomad/structs/config"
-	log "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
 	"github.com/actiontech/dtle/plugins/base"
 	"github.com/actiontech/dtle/version"
+	log "github.com/hashicorp/go-hclog"
 )
 
 var (

@@ -7,7 +7,7 @@ import (
 	dmstate "github.com/actiontech/dtle/client/devicemanager/state"
 	driverstate "github.com/actiontech/dtle/client/pluginmanager/drivermanager/state"
 	"github.com/actiontech/dtle/nomad/structs"
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
+	hclog "github.com/hashicorp/go-hclog"
 )
 
 // MemDB implements a StateDB that stores data in memory and should only be

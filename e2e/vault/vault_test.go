@@ -18,11 +18,11 @@ import (
 	"github.com/actiontech/dtle/command/agent"
 	"github.com/actiontech/dtle/helper"
 	"github.com/actiontech/dtle/nomad/structs/config"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
-	"github.com/actiontech/dtle/nomad/vendor/golang.org/x/sync/errgroup"
 	"github.com/actiontech/dtle/testutil"
+	"github.com/stretchr/testify/require"
+	"golang.org/x/sync/errgroup"
 
-	vapi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/vault/api"
+	vapi "github.com/hashicorp/vault/api"
 )
 
 var integration = flag.Bool("integration", false, "run integration tests")

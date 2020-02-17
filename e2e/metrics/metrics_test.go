@@ -12,7 +12,7 @@ import (
 	"github.com/actiontech/dtle/api"
 	"github.com/actiontech/dtle/e2e/e2eutil"
 	"github.com/actiontech/dtle/helper/uuid"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"
 )
 
 var metrics = flag.Bool("metrics", false, "run metrics tests")

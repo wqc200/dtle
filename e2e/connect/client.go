@@ -6,8 +6,8 @@ import (
 	"github.com/actiontech/dtle/e2e/e2eutil"
 	"github.com/actiontech/dtle/e2e/framework"
 	"github.com/actiontech/dtle/helper/uuid"
-	capi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	capi "github.com/hashicorp/consul/api"
+	"github.com/stretchr/testify/require"
 )
 
 type ConnectClientStateE2ETest struct {

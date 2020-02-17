@@ -6,8 +6,8 @@ import (
 
 	napi "github.com/actiontech/dtle/api"
 	"github.com/actiontech/dtle/helper/uuid"
-	capi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
-	vapi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/vault/api"
+	capi "github.com/hashicorp/consul/api"
+	vapi "github.com/hashicorp/vault/api"
 )
 
 // ProvisionerOptions defines options to be given to the Provisioner when calling

@@ -12,8 +12,8 @@ import (
 	"github.com/actiontech/dtle/helper/testlog"
 	"github.com/actiontech/dtle/nomad/mock"
 	"github.com/actiontech/dtle/nomad/structs"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/kr/pretty"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	"github.com/kr/pretty"
+	"github.com/stretchr/testify/require"
 )
 
 func setupBoltStateDB(t *testing.T) (*BoltStateDB, func()) {

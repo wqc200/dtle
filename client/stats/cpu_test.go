@@ -8,7 +8,7 @@ import (
 
 	shelpers "github.com/actiontech/dtle/helper/stats"
 	"github.com/actiontech/dtle/helper/testlog"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCpuStatsPercent(t *testing.T) {

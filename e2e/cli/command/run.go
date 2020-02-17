@@ -6,10 +6,10 @@ import (
 	"os/exec"
 	"strings"
 
-	capi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
-	vapi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/vault/api"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/mitchellh/cli"
+	capi "github.com/hashicorp/consul/api"
+	hclog "github.com/hashicorp/go-hclog"
+	vapi "github.com/hashicorp/vault/api"
+	"github.com/mitchellh/cli"
 )
 
 func RunCommandFactory(meta Meta) cli.CommandFactory {

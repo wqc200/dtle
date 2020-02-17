@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/actiontech/dtle/api/internal/testutil"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/kr/pretty"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	"github.com/kr/pretty"
+	"github.com/stretchr/testify/require"
 )
 
 func TestJobs_Register(t *testing.T) {

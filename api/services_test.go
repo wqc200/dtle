@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestService_CheckRestart asserts Service.CheckRestart settings are properly

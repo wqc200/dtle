@@ -15,10 +15,10 @@ import (
 	"github.com/actiontech/dtle/olddtle/internal/config/mysql"
 	umconf "github.com/actiontech/dtle/olddtle/internal/config/mysql"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/pkg/errors"
 	"github.com/actiontech/dtle/olddtle/internal/g"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/pkg/errors"
 
 	//"math"
 	"bytes"
@@ -30,7 +30,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/golang/snappy"
+	"github.com/golang/snappy"
 	gonats "github.com/nats-io/go-nats"
 	gomysql "github.com/siddontang/go-mysql/mysql"
 
@@ -42,8 +42,6 @@ import (
 
 	"context"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/mem"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/sirupsen/logrus"
 	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/base"
 	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/binlog"
 	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sql"
@@ -51,6 +49,8 @@ import (
 	"github.com/actiontech/dtle/olddtle/internal/config"
 	"github.com/actiontech/dtle/olddtle/internal/models"
 	"github.com/actiontech/dtle/olddtle/utils"
+	"github.com/shirou/gopsutil/mem"
+	"github.com/sirupsen/logrus"
 )
 
 const (

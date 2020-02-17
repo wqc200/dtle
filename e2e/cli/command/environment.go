@@ -15,7 +15,7 @@ import (
 	"syscall"
 	"time"
 
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
+	hclog "github.com/hashicorp/go-hclog"
 )
 
 // environment captures all the information needed to execute terraform

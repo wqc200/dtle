@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/actiontech/dtle/api/internal/testutil"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type configCallback func(c *Config)

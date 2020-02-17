@@ -4,8 +4,8 @@ import (
 	"flag"
 	"testing"
 
-	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/ginkgo"
-	. "github.com/actiontech/dtle/nomad/vendor/github.com/onsi/gomega"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var integration = flag.Bool("integration", false, "run integration tests")

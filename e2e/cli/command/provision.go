@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	getter "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-getter"
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/mitchellh/cli"
+	getter "github.com/hashicorp/go-getter"
+	hclog "github.com/hashicorp/go-hclog"
+	"github.com/mitchellh/cli"
 )
 
 const (

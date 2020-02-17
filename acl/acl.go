@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	iradix "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-immutable-radix"
-	glob "github.com/actiontech/dtle/nomad/vendor/github.com/ryanuber/go-glob"
+	iradix "github.com/hashicorp/go-immutable-radix"
+	glob "github.com/ryanuber/go-glob"
 )
 
 // ManagementACL is a singleton used for management tokens

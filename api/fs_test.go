@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/actiontech/dtle/api/internal/testutil"
-	units "github.com/actiontech/dtle/nomad/vendor/github.com/docker/go-units"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/kr/pretty"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	units "github.com/docker/go-units"
+	"github.com/kr/pretty"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFS_Logs(t *testing.T) {

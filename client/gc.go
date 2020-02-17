@@ -8,7 +8,7 @@ import (
 
 	"github.com/actiontech/dtle/client/stats"
 	"github.com/actiontech/dtle/nomad/structs"
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
+	hclog "github.com/hashicorp/go-hclog"
 )
 
 const (

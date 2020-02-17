@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	shelpers "github.com/actiontech/dtle/helper/stats"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/cpu"
 )
 
 func (h *HostStatsCollector) collectCPUStats() (cpus []*CPUStats, totalTicks float64, err error) {

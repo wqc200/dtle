@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/actiontech/dtle/api/internal/testutil"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAgent_Self(t *testing.T) {

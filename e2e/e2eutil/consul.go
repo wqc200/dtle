@@ -3,8 +3,8 @@ package e2eutil
 import (
 	"time"
 
-	capi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	capi "github.com/hashicorp/consul/api"
+	"github.com/stretchr/testify/require"
 )
 
 // RequireConsulStatus asserts the aggregate health of the service converges to

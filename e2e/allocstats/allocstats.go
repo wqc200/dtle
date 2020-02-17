@@ -2,7 +2,7 @@ package allocstats
 
 import (
 	"github.com/actiontech/dtle/e2e/framework"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"
 
 	"fmt"
 

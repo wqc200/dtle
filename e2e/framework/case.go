@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/actiontech/dtle/api"
-	capi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
+	capi "github.com/hashicorp/consul/api"
 )
 
 // TestSuite defines a set of test cases and under what conditions to run them

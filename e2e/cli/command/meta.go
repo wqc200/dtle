@@ -4,8 +4,8 @@ import (
 	"flag"
 	"strings"
 
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/mitchellh/cli"
+	hclog "github.com/hashicorp/go-hclog"
+	"github.com/mitchellh/cli"
 )
 
 type Meta struct {

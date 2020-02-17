@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/gorilla/websocket"
+	"github.com/gorilla/websocket"
 )
 
 var (

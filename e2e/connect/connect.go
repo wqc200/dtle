@@ -10,9 +10,9 @@ import (
 	"github.com/actiontech/dtle/e2e/framework"
 	"github.com/actiontech/dtle/helper/uuid"
 	"github.com/actiontech/dtle/jobspec"
-	consulapi "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/consul/api"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/kr/pretty"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	consulapi "github.com/hashicorp/consul/api"
+	"github.com/kr/pretty"
+	"github.com/stretchr/testify/require"
 )
 
 type ConnectE2ETest struct {

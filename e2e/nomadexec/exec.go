@@ -14,9 +14,9 @@ import (
 	"github.com/actiontech/dtle/e2e/e2eutil"
 	"github.com/actiontech/dtle/e2e/framework"
 	"github.com/actiontech/dtle/helper/uuid"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/assert"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
 	dtestutils "github.com/actiontech/dtle/plugins/drivers/testutils"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type NomadExecE2ETest struct {

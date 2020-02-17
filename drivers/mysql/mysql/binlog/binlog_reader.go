@@ -16,11 +16,11 @@ import (
 
 	"github.com/cznic/mathutil"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/sirupsen/logrus"
 	"github.com/actiontech/dtle/olddtle/internal/client/driver/common"
 	"github.com/pingcap/dm/dm/pb"
 	"github.com/pingcap/dm/pkg/gtid"
 	"github.com/pingcap/dm/pkg/streamer"
+	"github.com/sirupsen/logrus"
 
 	"github.com/actiontech/dtle/olddtle/internal/g"
 	//"encoding/hex"
@@ -37,9 +37,9 @@ import (
 	"github.com/pingcap/parser/ast"
 	_ "github.com/pingcap/tidb/types/parser_driver"
 
-	"github.com/actiontech/dtle/nomad/vendor/golang.org/x/net/context"
 	gomysql "github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
+	"golang.org/x/net/context"
 
 	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/base"
 	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sql"

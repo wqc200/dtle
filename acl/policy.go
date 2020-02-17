@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/hcl"
+	"github.com/hashicorp/hcl"
 )
 
 const (

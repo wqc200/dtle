@@ -8,7 +8,7 @@ import (
 	"github.com/actiontech/dtle/helper"
 	"github.com/actiontech/dtle/helper/testlog"
 	"github.com/actiontech/dtle/nomad/mock"
-	testing "github.com/actiontech/dtle/nomad/vendor/github.com/mitchellh/go-testing-interface"
+	testing "github.com/mitchellh/go-testing-interface"
 )
 
 // TestClientConfig returns a default client configuration for test clients and

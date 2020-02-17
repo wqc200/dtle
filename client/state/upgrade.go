@@ -7,9 +7,9 @@ import (
 
 	"github.com/actiontech/dtle/helper/boltdd"
 	"github.com/actiontech/dtle/nomad/structs"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/boltdb/bolt"
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/ugorji/go/codec"
+	"github.com/boltdb/bolt"
+	hclog "github.com/hashicorp/go-hclog"
+	"github.com/ugorji/go/codec"
 )
 
 // NeedsUpgrade returns true if the BoltDB needs upgrading or false if it is

@@ -10,8 +10,8 @@ import (
 	"github.com/actiontech/dtle/helper/boltdd"
 	"github.com/actiontech/dtle/helper/testlog"
 	"github.com/actiontech/dtle/helper/uuid"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/boltdb/bolt"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
+	"github.com/boltdb/bolt"
+	"github.com/stretchr/testify/require"
 )
 
 func setupBoltDB(t *testing.T) (*bolt.DB, func()) {

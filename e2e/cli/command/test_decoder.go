@@ -8,8 +8,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/actiontech/dtle/nomad/vendor/github.com/fatih/color"
-	hclog "github.com/actiontech/dtle/nomad/vendor/github.com/hashicorp/go-hclog"
+	"github.com/fatih/color"
+	hclog "github.com/hashicorp/go-hclog"
 )
 
 type EventDecoder struct {

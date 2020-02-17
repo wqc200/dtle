@@ -1,5 +1,6 @@
 package dtle_nomad
-import(dtle "github.com/actiontech/dtle/olddtle/api"
+import(
+	dtle "github.com/actiontech/dtle/olddtle/api"
 nomad "github.com/actiontech/dtle/api"
 	"github.com/actiontech/dtle/api"
 )

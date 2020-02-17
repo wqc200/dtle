@@ -5,8 +5,8 @@ import (
 
 	"github.com/actiontech/dtle/e2e/framework"
 	"github.com/actiontech/dtle/nomad/structs"
-	"github.com/actiontech/dtle/nomad/vendor/github.com/stretchr/testify/require"
 	"github.com/actiontech/dtle/testutil"
+	"github.com/stretchr/testify/require"
 
 	"github.com/actiontech/dtle/e2e/e2eutil"
 	"github.com/actiontech/dtle/helper/uuid"
