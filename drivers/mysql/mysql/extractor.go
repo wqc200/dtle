@@ -11,9 +11,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/common"
-	"github.com/actiontech/dtle/olddtle/internal/config/mysql"
-	umconf "github.com/actiontech/dtle/olddtle/internal/config/mysql"
+	"github.com/actiontech/dtle/drivers/dtle/common"
+	"github.com/actiontech/dtle/drivers/mysql/mysql"
+	umconf "github.com/actiontech/dtle/drivers/mysql/mysql"
 
 	"github.com/actiontech/dtle/olddtle/internal/g"
 	"github.com/opentracing/opentracing-go"
@@ -42,11 +42,11 @@ import (
 
 	"context"
 
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/base"
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/binlog"
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sql"
-	sqle "github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sqle/inspector"
-	"github.com/actiontech/dtle/olddtle/internal/config"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
+	sqle "github.com/actiontech/dtle/drivers/mysql/mysql/sqle/inspector"
 	"github.com/actiontech/dtle/olddtle/internal/models"
 	"github.com/actiontech/dtle/olddtle/utils"
 	"github.com/shirou/gopsutil/mem"
@@ -108,7 +108,7 @@ type Extractor struct {
 	fullCopyDone    chan struct{}
 }
 
-func NewExtractor(execCtx *common.ExecContext, cfg *config.MySQLDriverConfig, logger *logrus.Logger) (*Extractor, error) {
+func NewExtractor(execCtx *common.ExecContext, cfg *config.MySQLDriverConfig, logger hclog.Logger) (*Extractor, error) {
 
 	cfg = cfg.SetDefault()
 	entry := logger.WithFields(logrus.Fields{

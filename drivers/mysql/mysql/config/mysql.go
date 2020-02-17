@@ -1,116 +1,13 @@
-/*
- * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/actiontech/dtle, github.com/github/gh-ost .
- * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
- */
-
-package config
+package mysql
 
 import (
 	"fmt"
-	"io"
-	"os"
+	"strings"
 	"sync/atomic"
 	"time"
 
-	umconf "github.com/actiontech/dtle/olddtle/internal/config/mysql"
-	"github.com/actiontech/dtle/olddtle/internal/models"
-
-	"strings"
-
-	"github.com/actiontech/dtle/olddtle/internal"
-	qldatasource "github.com/araddon/qlbridge/datasource"
-	qlexpr "github.com/araddon/qlbridge/expr"
-	qlvm "github.com/araddon/qlbridge/vm"
+	umconf "github.com/actiontech/dtle/drivers/mysql/mysql"
 )
-
-// This is the default port that we use for Serf communication
-const (
-	DefaultBindPort  int = 8191
-	DefaultClusterID     = "udup-cluster"
-
-	channelBufferSize = 600
-	defaultNumRetries = 5
-	defaultChunkSize  = 2000
-	defaultNumWorkers = 1
-	defaultMsgBytes   = 20 * 1024
-)
-
-// RPCHandler can be provided to the Client if there is a local server
-// to avoid going over the network. If not provided, the Client will
-// maintain a connection pool to the servers
-type RPCHandler interface {
-	RPC(method string, args interface{}, reply interface{}) error
-}
-
-// Config is used to parameterize and configure the behavior of the client
-type ClientConfig struct {
-	// StateDir is where we store our state
-	StateDir string
-
-	// AllocDir is where we store data for allocations
-	AllocDir string
-
-	// LogOutput is the destination for logs
-	LogOutput io.Writer
-
-	// Specify the log file name. The empty string means to log to stdout.
-	LogFile string
-
-	// Region is the clients region
-	Region string
-
-	// Servers is a list of known server addresses. These are as "host:port"
-	Servers []string
-
-	// RPCHandler can be provided to avoid network traffic if the
-	// server is running locally.
-	RPCHandler RPCHandler
-
-	// Node provides the base node
-	Node *models.Node
-
-	// Version is the version of the Udup client
-	Version string
-
-	// Revision is the commit number of the Udup client
-	Revision string
-
-	// ConsulConfig is this Agent's Consul configuration
-	ConsulConfig *ConsulConfig
-
-	NatsAddr string
-
-	MaxPayload int
-
-	// StatsCollectionInterval is the interval at which the Udup client
-	// collects resource usage stats
-	StatsCollectionInterval time.Duration
-
-	// PublishNodeMetrics determines whether server is going to publish node
-	// level metrics to remote Metric sinks
-	PublishNodeMetrics bool
-
-	// PublishAllocationMetrics determines whether server is going to publish
-	// allocation metrics to remote Metric sinks
-	PublishAllocationMetrics bool
-
-	// LogLevel is the level of the logs to putout
-	LogLevel string
-
-	// NoHostUUID disables using the host's UUID and will force generation of a
-	// random UUID.
-	NoHostUUID bool
-}
-
-func (c *ClientConfig) Copy() *ClientConfig {
-	nc := new(ClientConfig)
-	*nc = *c
-	nc.Node = nc.Node.Copy()
-	nc.Servers = internal.CopySliceString(nc.Servers)
-	nc.ConsulConfig = c.ConsulConfig.Copy()
-	return nc
-}
 
 type DriverCtx struct {
 	DriverConfig *MySQLDriverConfig
@@ -388,17 +285,5 @@ func NewWhereCtx(where string, table *Table) (*WhereContext, error) {
 			FieldsMap: fieldsMap,
 			IsDefault: strings.ToLower(where) == "true",
 		}, nil
-	}
-}
-
-// DefaultConfig returns the default configuration
-func DefaultClientConfig() *ClientConfig {
-	return &ClientConfig{
-		NatsAddr:                "0.0.0.0:8193",
-		ConsulConfig:            DefaultConsulConfig(),
-		LogOutput:               os.Stderr,
-		Region:                  "global",
-		StatsCollectionInterval: 1 * time.Second,
-		LogLevel:                "INFO",
 	}
 }

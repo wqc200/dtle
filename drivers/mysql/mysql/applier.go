@@ -11,7 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/common"
+	"github.com/actiontech/dtle/drivers/dtle/common"
 
 	"github.com/actiontech/dtle/olddtle/internal/g"
 	"github.com/opentracing/opentracing-go"
@@ -38,11 +38,11 @@ import (
 	"encoding/hex"
 	"os"
 
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/base"
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/binlog"
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sql"
-	"github.com/actiontech/dtle/olddtle/internal/config"
-	umconf "github.com/actiontech/dtle/olddtle/internal/config/mysql"
+	umconf "github.com/actiontech/dtle/drivers/mysql/mysql"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 	"github.com/actiontech/dtle/olddtle/internal/models"
 	"github.com/actiontech/dtle/olddtle/utils"
 
@@ -245,7 +245,7 @@ type Applier struct {
 	stubFullApplyDelay time.Duration
 }
 
-func NewApplier(ctx *common.ExecContext, cfg *config.MySQLDriverConfig, logger *logrus.Logger) (*Applier, error) {
+func NewApplier(ctx *common.ExecContext, cfg *config.MySQLDriverConfig, logger hclog.Logger) (*Applier, error) {
 	cfg = cfg.SetDefault()
 	entry := logger.WithFields(logrus.Fields{
 		"job": ctx.Subject,

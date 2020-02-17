@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/actiontech/dtle/client/fingerprint"
-	"github.com/actiontech/dtle/olddtle/internal/config"
+	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/olddtle/internal/models"
 	"github.com/hashicorp/consul-template/signals"
 	hclog "github.com/hashicorp/go-hclog"
@@ -327,7 +327,7 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	case models.TaskTypeDest:
 		{
 			d.logger.Debug("NewApplier ReplicateDoDb: %v", driverConfig.ReplicateDoDb)
-			a, err := mysql.NewApplier(ctx, &driverConfig, m.logger)
+			a, err := mysql.NewApplier(ctx, &driverConfig, d.logger)
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to create Applier  e: %v", err)
 			}
@@ -340,9 +340,9 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 		}
 	}
 
-	return nil, nil
-	/*
-		var driverConfig TaskConfig
+	//return nil, nil
+
+	/*	var driverConfig TaskConfig
 		if err := cfg.DecodeDriverConfig(&driverConfig); err != nil {
 			return nil, nil, fmt.Errorf("failed to decode driver config: %v", err)
 		}
@@ -359,24 +359,24 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 		args := javaCmdArgs(driverConfig)
 
 		d.logger.Info("starting java task", "driver_cfg", hclog.Fmt("%+v", driverConfig), "args", args)
+	*/
+	handle := drivers.NewTaskHandle(taskHandleVersion)
+	handle.Config = cfg
 
-		handle := drivers.NewTaskHandle(taskHandleVersion)
-		handle.Config = cfg
-
-		pluginLogFile := filepath.Join(cfg.TaskDir().Dir, "executor.out")
+	/*	pluginLogFile := filepath.Join(cfg.TaskDir().Dir, "executor.out")
 		executorConfig := &executor.ExecutorConfig{
-			LogFile:     pluginLogFile,
-			LogLevel:    "debug",
-			FSIsolation: capabilities.FSIsolation == drivers.FSIsolationChroot,
-		}
+				LogFile:     pluginLogFile,
+				LogLevel:    "debug",
+				FSIsolation: capabilities.FSIsolation == drivers.FSIsolationChroot,
+			}*/
 
-		exec, pluginClient, err := executor.CreateExecutor(
-			d.logger.With("task_name", handle.Config.Name, "alloc_id", handle.Config.AllocID),
-			d.nomadConfig, executorConfig)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to create executor: %v", err)
-		}*/
-
+	/*exec, pluginClient, err := executor.CreateExecutor(
+		d.logger.With("task_name", handle.Config.Name, "alloc_id", handle.Config.AllocID),
+		d.nomadConfig, executorConfig)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create executor: %v", err)
+	}
+	*/
 	user := cfg.User
 	if user == "" {
 		user = "nobody"
