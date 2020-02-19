@@ -255,9 +255,9 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 	}
 
 	// COMPAT(0.10): pre 0.9 upgrade path check
-	if handle.Version == 0 {
+	/*if handle.Version == 0 {
 		return d.recoverPre09Task(handle)
-	}
+	}*/
 
 	// If already attached to handle there's nothing to recover.
 	if _, ok := d.tasks.Get(handle.Config.ID); ok {
@@ -274,27 +274,11 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 		return fmt.Errorf("failed to decode taskConfig state from handle: %v", err)
 	}
 
-	plugRC, err := pstructs.ReattachConfigToGoPlugin(taskState.ReattachConfig)
-	if err != nil {
-		d.logger.Error("failed to build ReattachConfig from taskConfig state", "error", err, "task_id", handle.Config.ID)
-		return fmt.Errorf("failed to build ReattachConfig from taskConfig state: %v", err)
-	}
-
-	execImpl, pluginClient, err := executor.ReattachToExecutor(plugRC,
-		d.logger.With("task_name", handle.Config.Name, "alloc_id", handle.Config.AllocID))
-	if err != nil {
-		d.logger.Error("failed to reattach to executor", "error", err, "task_id", handle.Config.ID)
-		return fmt.Errorf("failed to reattach to executor: %v", err)
-	}
-
 	h := &taskHandle{
-		exec:         execImpl,
-		pid:          taskState.Pid,
-		pluginClient: pluginClient,
-		taskConfig:   taskState.TaskConfig,
-		procState:    drivers.TaskStateRunning,
-		startedAt:    taskState.StartedAt,
-		exitResult:   &drivers.ExitResult{},
+		taskConfig: taskState.TaskConfig,
+		procState:  drivers.TaskStateRunning,
+		startedAt:  taskState.StartedAt,
+		exitResult: &drivers.ExitResult{},
 	}
 
 	d.tasks.Set(taskState.TaskConfig.ID, h)
@@ -356,66 +340,41 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 			return nil, nil, fmt.Errorf("failed to find java binary: %s", err)
 		}
 
-		args := javaCmdArgs(driverConfig)
+		args := javaCmdArgs(driverConfig)	*/
 
-		d.logger.Info("starting java task", "driver_cfg", hclog.Fmt("%+v", driverConfig), "args", args)
-	*/
+	//d.logger.Info("starting mysql task", "driver_cfg", hclog.Fmt("%+v", driverConfig), "args", args)
+
 	handle := drivers.NewTaskHandle(taskHandleVersion)
 	handle.Config = cfg
 
-	/*	pluginLogFile := filepath.Join(cfg.TaskDir().Dir, "executor.out")
-		executorConfig := &executor.ExecutorConfig{
-				LogFile:     pluginLogFile,
-				LogLevel:    "debug",
-				FSIsolation: capabilities.FSIsolation == drivers.FSIsolationChroot,
-			}*/
+	pluginLogFile := filepath.Join(cfg.TaskDir().Dir, "executor.out")
+	executorConfig := &executor.ExecutorConfig{
+		LogFile:     pluginLogFile,
+		LogLevel:    "debug",
+		FSIsolation: capabilities.FSIsolation == drivers.FSIsolationChroot,
+	}
 
-	/*exec, pluginClient, err := executor.CreateExecutor(
+	exec, pluginClient, err := executor.CreateExecutor(
 		d.logger.With("task_name", handle.Config.Name, "alloc_id", handle.Config.AllocID),
 		d.nomadConfig, executorConfig)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create executor: %v", err)
 	}
-	*/
+
 	user := cfg.User
 	if user == "" {
 		user = "nobody"
 	}
 
-	execCmd := &executor.ExecCommand{
-		Cmd:              absPath,
-		Args:             args,
-		Env:              cfg.EnvList(),
-		User:             user,
-		ResourceLimits:   true,
-		Resources:        cfg.Resources,
-		TaskDir:          cfg.TaskDir().Dir,
-		StdoutPath:       cfg.StdoutPath,
-		StderrPath:       cfg.StderrPath,
-		Mounts:           cfg.Mounts,
-		Devices:          cfg.Devices,
-		NetworkIsolation: cfg.NetworkIsolation,
-	}
-
-	ps, err := exec.Launch(execCmd)
-	if err != nil {
-		pluginClient.Kill()
-		return nil, nil, fmt.Errorf("failed to launch command with executor: %v", err)
-	}
-
 	h := &taskHandle{
-		exec:         exec,
-		pid:          ps.Pid,
-		pluginClient: pluginClient,
-		taskConfig:   cfg,
-		procState:    drivers.TaskStateRunning,
-		startedAt:    time.Now().Round(time.Millisecond),
-		logger:       d.logger,
+		taskConfig: cfg,
+		procState:  drivers.TaskStateRunning,
+		startedAt:  time.Now().Round(time.Millisecond),
+		logger:     d.logger,
 	}
 
 	driverState := TaskState{
 		ReattachConfig: pstructs.ReattachConfigFromGoPlugin(pluginClient.ReattachConfig()),
-		Pid:            ps.Pid,
 		TaskConfig:     cfg,
 		StartedAt:      h.startedAt,
 	}
@@ -447,7 +406,7 @@ func (d *Driver) WaitTask(ctx context.Context, taskID string) (<-chan *drivers.E
 func (d *Driver) handleWait(ctx context.Context, handle *taskHandle, ch chan *drivers.ExitResult) {
 	defer close(ch)
 	var result *drivers.ExitResult
-	ps, err := handle.exec.Wait(ctx)
+	/*ps, err := handle.exec.Wait(ctx)
 	if err != nil {
 		result = &drivers.ExitResult{
 			Err: fmt.Errorf("executor: error waiting on process: %v", err),
@@ -457,7 +416,7 @@ func (d *Driver) handleWait(ctx context.Context, handle *taskHandle, ch chan *dr
 			ExitCode: ps.ExitCode,
 			Signal:   ps.Signal,
 		}
-	}
+	}*/
 
 	select {
 	case <-ctx.Done():
@@ -469,17 +428,17 @@ func (d *Driver) handleWait(ctx context.Context, handle *taskHandle, ch chan *dr
 }
 
 func (d *Driver) StopTask(taskID string, timeout time.Duration, signal string) error {
-	handle, ok := d.tasks.Get(taskID)
-	if !ok {
-		return drivers.ErrTaskNotFound
-	}
-
-	if err := handle.exec.Shutdown(signal, timeout); err != nil {
-		if handle.pluginClient.Exited() {
-			return nil
+	/*	handle, ok := d.tasks.Get(taskID)
+		if !ok {
+			return drivers.ErrTaskNotFound
 		}
-		return fmt.Errorf("executor Shutdown failed: %v", err)
-	}
+
+		if err := handle.exec.Shutdown(signal, timeout); err != nil {
+			if handle.pluginClient.Exited() {
+				return nil
+			}
+			return fmt.Errorf("executor Shutdown failed: %v", err)
+		}*/
 
 	return nil
 }
@@ -494,7 +453,7 @@ func (d *Driver) DestroyTask(taskID string, force bool) error {
 		return fmt.Errorf("cannot destroy running task")
 	}
 
-	if !handle.pluginClient.Exited() {
+	/*if !handle.pluginClient.Exited() {
 		if handle.IsRunning() {
 			if err := handle.exec.Shutdown("", 0); err != nil {
 				handle.logger.Error("destroying executor failed", "err", err)
@@ -502,7 +461,7 @@ func (d *Driver) DestroyTask(taskID string, force bool) error {
 		}
 
 		handle.pluginClient.Kill()
-	}
+	}*/
 
 	d.tasks.Delete(taskID)
 	return nil
@@ -523,7 +482,7 @@ func (d *Driver) TaskStats(ctx context.Context, taskID string, interval time.Dur
 		return nil, drivers.ErrTaskNotFound
 	}
 
-	return handle.exec.Stats(ctx, interval)
+	return handle.exec.Stats(ctx, interval), nil
 }
 
 func (d *Driver) TaskEvents(ctx context.Context) (<-chan *drivers.TaskEvent, error) {

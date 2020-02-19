@@ -44,13 +44,12 @@ import (
 
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
-	"github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 	sqle "github.com/actiontech/dtle/drivers/mysql/mysql/sqle/inspector"
 	"github.com/actiontech/dtle/olddtle/internal/models"
 	"github.com/actiontech/dtle/olddtle/utils"
 	"github.com/shirou/gopsutil/mem"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -67,7 +66,7 @@ const (
 // Extractor is the main schema extract flow manager.
 type Extractor struct {
 	execCtx      *common.ExecContext
-	logger       *logrus.Entry
+	logger       hclog.Logger
 	subject      string
 	mysqlContext *config.MySQLDriverConfig
 
@@ -111,12 +110,12 @@ type Extractor struct {
 func NewExtractor(execCtx *common.ExecContext, cfg *config.MySQLDriverConfig, logger hclog.Logger) (*Extractor, error) {
 
 	cfg = cfg.SetDefault()
-	entry := logger.WithFields(logrus.Fields{
+	/*entry := logger.WithFields(logrus.Fields{
 		"job": execCtx.Subject,
-	})
+	})*/
 	e := &Extractor{
 
-		logger:          entry,
+		logger:          logger,
 		execCtx:         execCtx,
 		subject:         execCtx.Subject,
 		mysqlContext:    cfg,
@@ -134,7 +133,7 @@ func NewExtractor(execCtx *common.ExecContext, cfg *config.MySQLDriverConfig, lo
 	e.context.LoadSchemas(nil)
 
 	if delay, err := strconv.ParseInt(os.Getenv(g.ENV_TESTSTUB1_DELAY), 10, 64); err == nil {
-		e.logger.Infof("%v = %v", g.ENV_TESTSTUB1_DELAY, delay)
+		e.logger.Info("%v = %v", g.ENV_TESTSTUB1_DELAY, delay)
 		e.testStub1Delay = delay
 	}
 
@@ -178,7 +177,7 @@ func (e *Extractor) retryOperation(operation func() error, notFatalHint ...bool)
 
 // Run executes the complete extract logic.
 func (e *Extractor) Run() {
-	e.logger.Printf("mysql.extractor: Extract binlog events from %s.%d", e.mysqlContext.ConnectionConfig.Host, e.mysqlContext.ConnectionConfig.Port)
+	e.logger.Info("mysql.extractor: Extract binlog events from %s.%d", e.mysqlContext.ConnectionConfig.Host, e.mysqlContext.ConnectionConfig.Port)
 	e.mysqlContext.StartTime = time.Now()
 
 	// Validate job arguments
@@ -213,7 +212,7 @@ func (e *Extractor) Run() {
 				return
 			}
 			e.mysqlContext.Gtid = coord.GtidSet
-			e.logger.Debugf("mysql.extractor: use auto gtid: %v", coord.GtidSet)
+			e.logger.Debug("mysql.extractor: use auto gtid: %v", coord.GtidSet)
 			fullCopy = false
 		}
 
@@ -241,7 +240,7 @@ func (e *Extractor) Run() {
 			if e.mysqlContext.BinlogFile == "" {
 				err := fmt.Errorf("the a job is incr-only (with GTID) and has BinlogRelay enabled," +
 					" but BinlogFile,Pos is not provided")
-				e.logger.WithError(err).Errorf("mysql.extractor. job config error")
+				e.logger.Error("mysql.extractor. job config error")
 				e.onError(TaskStateDead, err)
 				return
 			}
@@ -262,16 +261,16 @@ func (e *Extractor) Run() {
 				// This must be after `<-e.gotCoordinateCh` or there will be a deadlock
 				<-e.fullCopyDone
 			}
-			e.logger.Infof("mysql.extractor. initBinlogReader")
+			e.logger.Info("mysql.extractor. initBinlogReader")
 			e.initBinlogReader(e.initialBinlogCoordinates)
 
 			go func() {
 				_, err := e.natsConn.Subscribe(fmt.Sprintf("%s_progress", e.subject), func(m *gonats.Msg) {
 					binlogFile := string(m.Data)
-					e.logger.Debugf("*** progress: %v", binlogFile)
+					e.logger.Debug("*** progress: %v", binlogFile)
 					err := e.natsConn.Publish(m.Reply, nil)
 					if err != nil {
-						e.logger.Debugf("*** progress reply error. err %v", err)
+						e.logger.Debug("*** progress reply error. err %v", err)
 					}
 					e.binlogReader.OnApplierRotate(binlogFile)
 				})
@@ -323,16 +322,16 @@ func (e *Extractor) Run() {
 	}
 
 	if e.mysqlContext.SkipIncrementalCopy {
-		e.logger.Infof("mysql.extractor. SkipIncrementalCopy")
+		e.logger.info("mysql.extractor. SkipIncrementalCopy")
 	} else {
 		err := <-e.streamerReadyCh
 		if err != nil {
-			e.logger.Errorf("mysql.extractor error after streamerReadyCh: %v", err)
+			e.logger.Error("mysql.extractor error after streamerReadyCh: %v", err)
 			e.onError(TaskStateDead, err)
 			return
 		}
 		if err := e.initiateStreaming(); err != nil {
-			e.logger.Debugf("mysql.extractor error at initiateStreaming: %v", err)
+			e.logger.Debug("mysql.extractor error at initiateStreaming: %v", err)
 			e.onError(TaskStateDead, err)
 			return
 		}

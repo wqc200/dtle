@@ -6,7 +6,20 @@ import (
 	"sync/atomic"
 	"time"
 
-	umconf "github.com/actiontech/dtle/drivers/mysql/mysql"
+	qldatasource "github.com/araddon/qlbridge/datasource"
+	qlexpr "github.com/araddon/qlbridge/expr"
+	qlvm "github.com/araddon/qlbridge/vm"
+)
+
+const (
+	DefaultBindPort  int = 8191
+	DefaultClusterID     = "udup-cluster"
+
+	channelBufferSize = 600
+	defaultNumRetries = 5
+	defaultChunkSize  = 2000
+	defaultNumWorkers = 1
+	defaultMsgBytes   = 20 * 1024
 )
 
 type DriverCtx struct {
@@ -45,7 +58,7 @@ type MySQLDriverConfig struct {
 	BinlogRelay       bool
 	NatsAddr          string
 	ParallelWorkers   int
-	ConnectionConfig  *umconf.ConnectionConfig
+	ConnectionConfig  *ConnectionConfig
 	SystemVariables   map[string]string
 	HasSuperPrivilege bool
 	BinlogFormat      string
@@ -102,7 +115,7 @@ func (a *MySQLDriverConfig) SetDefault() *MySQLDriverConfig {
 	result.ApproveHeterogeneous = true
 
 	if result.ConnectionConfig == nil {
-		result.ConnectionConfig = &umconf.ConnectionConfig{}
+		result.ConnectionConfig = &ConnectionConfig{}
 	}
 	if "" == result.ConnectionConfig.Charset {
 		result.ConnectionConfig.Charset = "utf8mb4"
@@ -172,8 +185,8 @@ type Table struct {
 	TableSchemaRename string
 	Counter           int64
 
-	OriginalTableColumns *umconf.ColumnList
-	UseUniqueKey         *umconf.UniqueKey
+	OriginalTableColumns *ColumnList
+	UseUniqueKey         *UniqueKey
 	Iteration            int64
 
 	TableType    string
@@ -206,7 +219,7 @@ func NewTable(schemaName string, tableName string) *Table {
 	}
 }
 
-func (t *TableContext) WhereTrue(values *umconf.ColumnValues) (bool, error) {
+func (t *TableContext) WhereTrue(values *ColumnValues) (bool, error) {
 	var m = make(map[string]interface{})
 	for field, idx := range t.WhereCtx.FieldsMap {
 		nCols := len(values.ValuesPointers)
@@ -221,7 +234,7 @@ func (t *TableContext) WhereTrue(values *umconf.ColumnValues) (bool, error) {
 			value = rawValue
 		} else {
 			switch t.Table.OriginalTableColumns.ColumnList()[idx].Type {
-			case umconf.TextColumnType:
+			case TextColumnType:
 				bs, ok := rawValue.([]byte)
 				if !ok {
 					return false,

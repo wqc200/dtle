@@ -38,10 +38,10 @@ import (
 	"encoding/hex"
 	"os"
 
-	umconf "github.com/actiontech/dtle/drivers/mysql/mysql"
+	umconf "github.com/actiontech/dtle/drivers/mysql"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
-	"github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 	"github.com/actiontech/dtle/olddtle/internal/models"
 	"github.com/actiontech/dtle/olddtle/utils"

@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	sqle "github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sqle/inspector"
+	sqle "github.com/actiontech/dtle/drivers/mysql/mysql/sqle/inspector"
 	"github.com/actiontech/dtle/olddtle/internal/g"
 	"github.com/pingcap/parser/ast"
 	parsermysql "github.com/pingcap/parser/mysql"
@@ -25,8 +25,8 @@ import (
 	gomysql "github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go/hack"
 
-	usql "github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sql"
-	umconf "github.com/actiontech/dtle/olddtle/internal/config/mysql"
+	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	usql "github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 )
 
 var (

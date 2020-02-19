@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	ubase "github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/base"
-	usql "github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sql"
-	uconf "github.com/actiontech/dtle/olddtle/internal/config"
-	umconf "github.com/actiontech/dtle/olddtle/internal/config/mysql"
+	ubase "github.com/actiontech/dtle/drivers/mysql/mysql/base"
+	uconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	usql "github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,7 +29,7 @@ type Inspector struct {
 	mysqlContext *uconf.MySQLDriverConfig
 }
 
-func NewInspector(ctx *uconf.MySQLDriverConfig, logger *logrus.Entry) *Inspector {
+func NewInspector(ctx *uconf.MySQLDriverConfig, logger *hclog.Logger) *Inspector {
 	return &Inspector{
 		logger:       logger,
 		mysqlContext: ctx,

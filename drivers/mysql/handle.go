@@ -1,22 +1,15 @@
 package mysql
 
 import (
-	"context"
-	"strconv"
 	"sync"
 	"time"
 
-	"github.com/actiontech/dtle/drivers/shared/executor"
 	"github.com/actiontech/dtle/plugins/drivers"
 	hclog "github.com/hashicorp/go-hclog"
-	plugin "github.com/hashicorp/go-plugin"
 )
 
 type taskHandle struct {
-	exec         executor.Executor
-	pid          int
-	pluginClient *plugin.Client
-	logger       hclog.Logger
+	logger hclog.Logger
 
 	// stateLock syncs access to all fields below
 	stateLock sync.RWMutex
@@ -39,9 +32,6 @@ func (h *taskHandle) TaskStatus() *drivers.TaskStatus {
 		StartedAt:   h.startedAt,
 		CompletedAt: h.completedAt,
 		ExitResult:  h.exitResult,
-		DriverAttributes: map[string]string{
-			"pid": strconv.Itoa(h.pid),
-		},
 	}
 }
 
@@ -58,21 +48,10 @@ func (h *taskHandle) run() {
 	}
 	h.stateLock.Unlock()
 
-	ps, err := h.exec.Wait(context.Background())
-
 	h.stateLock.Lock()
 	defer h.stateLock.Unlock()
 
-	if err != nil {
-		h.exitResult.Err = err
-		h.procState = drivers.TaskStateUnknown
-		h.completedAt = time.Now()
-		return
-	}
 	h.procState = drivers.TaskStateExited
-	h.exitResult.ExitCode = ps.ExitCode
-	h.exitResult.Signal = ps.Signal
-	h.completedAt = ps.Time
 
 	// TODO: detect if the taskConfig OOMed
 }
