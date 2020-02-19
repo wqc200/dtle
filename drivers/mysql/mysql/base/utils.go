@@ -16,17 +16,17 @@ import (
 	"time"
 
 	sqle "github.com/actiontech/dtle/drivers/mysql/mysql/sqle/inspector"
-	"github.com/actiontech/dtle/olddtle/internal/g"
+
 	"github.com/pingcap/parser/ast"
 	parsermysql "github.com/pingcap/parser/mysql"
 
 	"database/sql"
 
-	gomysql "github.com/siddontang/go-mysql/mysql"
-	"github.com/siddontang/go/hack"
-
+	"github.com/actiontech/dtle/drivers/mysql/g"
 	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	usql "github.com/actiontech/dtle/drivers/mysql/mysql/sql"
+	gomysql "github.com/siddontang/go-mysql/mysql"
+	"github.com/siddontang/go/hack"
 )
 
 var (

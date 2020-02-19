@@ -310,8 +310,8 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 		}
 	case models.TaskTypeDest:
 		{
-			d.logger.Debug("NewApplier ReplicateDoDb: %v", driverConfig.ReplicateDoDb)
-			a, err := mysql.NewApplier(ctx, &driverConfig, d.logger)
+			d.logger.Warn("NewApplier ReplicateDoDb: %v", driverConfig.ReplicateDoDb)
+			a, err := mysql.NewApplier(ctx, &driverConfig, &d.logger)
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to create Applier  e: %v", err)
 			}
