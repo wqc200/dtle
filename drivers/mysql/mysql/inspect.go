@@ -16,7 +16,6 @@ import (
 	uconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	usql "github.com/actiontech/dtle/drivers/mysql/mysql/sql"
-	"github.com/sirupsen/logrus"
 )
 
 const startSlavePostWaitMilliseconds = 500 * time.Millisecond
@@ -24,12 +23,12 @@ const startSlavePostWaitMilliseconds = 500 * time.Millisecond
 // Inspector reads data from the read-MySQL-server (typically a replica, but can be the master)
 // It is used for gaining initial status and structure, and later also follow up on progress and changelog
 type Inspector struct {
-	logger       *logrus.Entry
+	logger       hclog.Logger
 	db           *gosql.DB
 	mysqlContext *uconf.MySQLDriverConfig
 }
 
-func NewInspector(ctx *uconf.MySQLDriverConfig, logger *hclog.Logger) *Inspector {
+func NewInspector(ctx *uconf.MySQLDriverConfig, logger hclog.Logger) *Inspector {
 	return &Inspector{
 		logger:       logger,
 		mysqlContext: ctx,
@@ -45,14 +44,14 @@ func (i *Inspector) InitDBConnections() (err error) {
 		return err
 	}
 	if err := i.validateGrants(); err != nil {
-		i.logger.Errorf("mysql.inspector: Unexpected error on validateGrants, got %v", err)
+		i.logger.Error("mysql.inspector: Unexpected error on validateGrants, got %v", err)
 		return err
 	}
 	/*for _, doDb := range i.mysqlContext.ReplicateDoDb {
 
 		for _, doTb := range doDb.Table {
 			if err := i.InspectOriginalTable(doDb.Database, doTb); err != nil {
-				i.logger.Errorf("mysql.inspector: unexpected error on InspectOriginalTable, got %v", err)
+				i.logger.Error("mysql.inspector: unexpected error on InspectOriginalTable, got %v", err)
 				return err
 			}
 		}
@@ -65,13 +64,13 @@ func (i *Inspector) InitDBConnections() (err error) {
 	if err := i.validateBinlogs(); err != nil {
 		return err
 	}
-	i.logger.Printf("mysql.inspector: Initiated on %s:%d, version %+v", i.mysqlContext.ConnectionConfig.Host, i.mysqlContext.ConnectionConfig.Port, i.mysqlContext.MySQLVersion)
+	i.logger.Info("mysql.inspector: Initiated on %s:%d, version %+v", i.mysqlContext.ConnectionConfig.Host, i.mysqlContext.ConnectionConfig.Port, i.mysqlContext.MySQLVersion)
 	return nil
 }
 
 func (i *Inspector) ValidateOriginalTable(databaseName, tableName string, table *uconf.Table) (err error) {
 	// this should be set event if there is an error (#177)
-	i.logger.Infof("Found 'where' on this table: '%v'", table.Where)
+	i.logger.Info("Found 'where' on this table: '%v'", table.Where)
 	if table.Where == "" {
 		table.Where = "true"
 	}
@@ -87,10 +86,10 @@ func (i *Inspector) ValidateOriginalTable(databaseName, tableName string, table 
 		return err
 	}
 
-	i.logger.Debugf("table: %s.%s. n_unique_keys: %d", table.TableSchema, table.TableName, len(uniqueKeys))
+	i.logger.Debug("table: %s.%s. n_unique_keys: %d", table.TableSchema, table.TableName, len(uniqueKeys))
 
 	for _, uk := range uniqueKeys {
-		i.logger.Debugf("A unique key: %s", uk.String())
+		i.logger.Debug("A unique key: %s", uk.String())
 
 		ubase.ApplyColumnTypes(i.db, table.TableSchema, table.TableName, &uk.Columns)
 
@@ -99,12 +98,12 @@ func (i *Inspector) ValidateOriginalTable(databaseName, tableName string, table 
 		for _, column := range uk.Columns.Columns {
 			switch column.Type {
 			case umconf.FloatColumnType:
-				i.logger.Warnf("Will not use %+v as unique key due to FLOAT data type", uk.Name)
+				i.logger.Warn("Will not use %+v as unique key due to FLOAT data type", uk.Name)
 				uniqueKeyIsValid = false
 			case umconf.JSONColumnType:
 				// Noteworthy that at this time MySQL does not allow JSON indexing anyhow, but this code
 				// will remain in place to potentially handle the future case where JSON is supported in indexes.
-				i.logger.Warnf("Will not use %+v as unique key due to JSON data type", uk.Name)
+				i.logger.Warn("Will not use %+v as unique key due to JSON data type", uk.Name)
 				uniqueKeyIsValid = false
 			default:
 				// do nothing
@@ -112,12 +111,12 @@ func (i *Inspector) ValidateOriginalTable(databaseName, tableName string, table 
 		}
 
 		if uk.HasNullable {
-			i.logger.Warnf("Will not use %+v as unique key due to having nullable", uk.Name)
+			i.logger.Warn("Will not use %+v as unique key due to having nullable", uk.Name)
 			uniqueKeyIsValid = false
 		}
 
 		if !uk.IsPrimary() && "FULL" != i.mysqlContext.BinlogRowImage {
-			i.logger.Warnf("Will not use %+v as unique key due to not primary when binlog row image is FULL", uk.Name)
+			i.logger.Warn("Will not use %+v as unique key due to not primary when binlog row image is FULL", uk.Name)
 			uniqueKeyIsValid = false
 		}
 
@@ -132,9 +131,9 @@ func (i *Inspector) ValidateOriginalTable(databaseName, tableName string, table 
 		}
 	}
 	if table.UseUniqueKey == nil {
-		i.logger.Warnf("No valid unique key found for table %s.%s. It will be slow on large table.", table.TableSchema, table.TableName)
+		i.logger.Warn("No valid unique key found for table %s.%s. It will be slow on large table.", table.TableSchema, table.TableName)
 	} else {
-		i.logger.Infof("Chosen unique key for %s.%s is %s",
+		i.logger.Info("Chosen unique key for %s.%s is %s",
 			table.TableSchema, table.TableName, table.UseUniqueKey.String())
 	}
 	// endregion
@@ -146,7 +145,7 @@ func (i *Inspector) ValidateOriginalTable(databaseName, tableName string, table 
 	// region validate 'where'
 	_, err = uconf.NewWhereCtx(table.Where, table)
 	if err != nil {
-		i.logger.Errorf("mysql.inspector: Error parse where '%v'", table.Where)
+		i.logger.Error("mysql.inspector: Error parse where '%v'", table.Where)
 		return err
 	}
 	// TODO the err cause only a WARN
@@ -162,7 +161,7 @@ func (i *Inspector) InspectTableColumnsAndUniqueKeys(databaseName, tableName str
 		return columns, uniqueKeys, err
 	}
 	/*if len(uniqueKeys) == 0 {
-		return columns, uniqueKeys, fmt.Errorf("No PRIMARY nor UNIQUE key found in table! Bailing out")
+		return columns, uniqueKeys, fmt.Error("No PRIMARY nor UNIQUE key found in table! Bailing out")
 	}*/
 	columns, err = ubase.GetTableColumns(i.db, databaseName, tableName)
 	if err != nil {
@@ -179,7 +178,7 @@ func (i *Inspector) validateConnection() error {
 		return err
 	}
 
-	i.logger.Printf("mysql.inspector: Connection validated on %s:%d", i.mysqlContext.ConnectionConfig.Host, i.mysqlContext.ConnectionConfig.Port)
+	i.logger.Info("mysql.inspector: Connection validated on %s:%d", i.mysqlContext.ConnectionConfig.Host, i.mysqlContext.ConnectionConfig.Port)
 	return nil
 }
 
@@ -187,7 +186,7 @@ func (i *Inspector) validateConnection() error {
 // to do its thang.
 func (i *Inspector) validateGrants() error {
 	if i.mysqlContext.SkipPrivilegeCheck {
-		i.logger.Debugf("mysql.inspector: skipping priv check")
+		i.logger.Debug("mysql.inspector: skipping priv check")
 		return nil
 	}
 
@@ -225,18 +224,18 @@ func (i *Inspector) validateGrants() error {
 	i.mysqlContext.HasSuperPrivilege = foundSuper
 
 	if foundAll {
-		i.logger.Printf("mysql.inspector: User has ALL privileges")
+		i.logger.Info("mysql.inspector: User has ALL privileges")
 		return nil
 	}
 	if foundSuper && foundReplicationSlave && foundDBAll {
-		i.logger.Printf("mysql.inspector: User has SUPER, REPLICATION SLAVE privileges, and has SELECT privileges")
+		i.logger.Info("mysql.inspector: User has SUPER, REPLICATION SLAVE privileges, and has SELECT privileges")
 		return nil
 	}
 	if foundReplicationClient && foundReplicationSlave && foundDBAll {
-		i.logger.Printf("mysql.inspector: User has REPLICATION CLIENT, REPLICATION SLAVE privileges, and has SELECT privileges")
+		i.logger.Info("mysql.inspector: User has REPLICATION CLIENT, REPLICATION SLAVE privileges, and has SELECT privileges")
 		return nil
 	}
-	i.logger.Debugf("mysql.inspector: Privileges: super: %t, REPLICATION CLIENT: %t, REPLICATION SLAVE: %t, ALL on *.*: %t, ALL on *.*: %t", foundSuper, foundReplicationClient, foundReplicationSlave, foundAll, foundDBAll)
+	i.logger.Debug("mysql.inspector: Privileges: super: %t, REPLICATION CLIENT: %t, REPLICATION SLAVE: %t, ALL on *.*: %t, ALL on *.*: %t", foundSuper, foundReplicationClient, foundReplicationSlave, foundAll, foundDBAll)
 	return fmt.Errorf("user has insufficient privileges for extractor. Needed: SUPER|REPLICATION CLIENT, REPLICATION SLAVE and ALL on *.*")
 }
 
@@ -272,7 +271,7 @@ func (i *Inspector) validateBinlogs() error {
 	}
 	i.mysqlContext.BinlogRowImage = strings.ToUpper(i.mysqlContext.BinlogRowImage)
 
-	i.logger.Printf("mysql.inspector: Binary logs validated on %s:%d", i.mysqlContext.ConnectionConfig.Host, i.mysqlContext.ConnectionConfig.Port)
+	i.logger.Info("mysql.inspector: Binary logs validated on %s:%d", i.mysqlContext.ConnectionConfig.Host, i.mysqlContext.ConnectionConfig.Port)
 	return nil
 }
 
@@ -422,6 +421,6 @@ func (i *Inspector) getCandidateUniqueKeys(databaseName, tableName string) (uniq
 	if err != nil {
 		return uniqueKeys, err
 	}
-	i.logger.Debugf("mysql.inspector: Potential unique keys in %+v.%+v: %+v", databaseName, tableName, uniqueKeys)
+	i.logger.Debug("mysql.inspector: Potential unique keys in %+v.%+v: %+v", databaseName, tableName, uniqueKeys)
 	return uniqueKeys, nil
 }

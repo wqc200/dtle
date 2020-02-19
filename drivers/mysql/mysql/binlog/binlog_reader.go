@@ -16,13 +16,13 @@ import (
 
 	"github.com/cznic/mathutil"
 
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/common"
+	"github.com/actiontech/dtle/drivers/mysql/common"
 	"github.com/pingcap/dm/dm/pb"
 	"github.com/pingcap/dm/pkg/gtid"
 	"github.com/pingcap/dm/pkg/streamer"
 	"github.com/sirupsen/logrus"
 
-	"github.com/actiontech/dtle/olddtle/internal/g"
+	"github.com/actiontech/dtle/drivers/mysql/g"
 	//"encoding/hex"
 	"fmt"
 	"regexp"
@@ -41,17 +41,14 @@ import (
 	"github.com/siddontang/go-mysql/replication"
 	"golang.org/x/net/context"
 
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/base"
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sql"
-	sqle "github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sqle/inspector"
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/util"
-	"github.com/actiontech/dtle/olddtle/internal/config"
-	"github.com/actiontech/dtle/olddtle/internal/config/mysql"
-
-	"github.com/actiontech/dtle/olddtle/internal/models"
+	mysql "github.com/actiontech/dtle/drivers/mysql/mysql"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
+	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
+	sqle "github.com/actiontech/dtle/drivers/mysql/mysql/sqle/inspector"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/util"
 	"github.com/actiontech/dtle/olddtle/utils"
 	"github.com/opentracing/opentracing-go"
-
 	dmrelay "github.com/pingcap/dm/relay"
 )
 
@@ -61,7 +58,7 @@ type BinlogReader struct {
 	serverId         uint64
 	execCtx          *common.ExecContext
 	logger           *logrus.Entry
-	connectionConfig *mysql.ConnectionConfig
+	connectionConfig *config.ConnectionConfig
 	db               *gosql.DB
 	relay            dmrelay.Process
 	relayCancelF     context.CancelFunc
@@ -227,7 +224,7 @@ func NewMySQLReader(execCtx *common.ExecContext, cfg *config.MySQLDriverConfig, 
 		binlogReader.binlogSyncer = replication.NewBinlogSyncer(binlogSyncerConfig)
 	}
 
-	binlogReader.mysqlContext.Stage = models.StageRegisteringSlaveOnMaster
+	binlogReader.mysqlContext.Stage = mysql.StageRegisteringSlaveOnMaster
 
 	return binlogReader, err
 }
@@ -395,8 +392,8 @@ func (b *BinlogReader) GetCurrentBinlogCoordinates() *base.BinlogCoordinateTx {
 	return &returnCoordinates
 }
 
-func ToColumnValuesV2(abstractValues []interface{}, table *config.TableContext) *mysql.ColumnValues {
-	result := &mysql.ColumnValues{
+func ToColumnValuesV2(abstractValues []interface{}, table *config.TableContext) *config.ColumnValues {
+	result := &config.ColumnValues{
 		AbstractValues: make([]*interface{}, len(abstractValues)),
 		ValuesPointers: make([]*interface{}, len(abstractValues)),
 	}
@@ -412,7 +409,7 @@ func ToColumnValuesV2(abstractValues []interface{}, table *config.TableContext) 
 				case int16:
 					abstractValues[i] = uint16(v)
 				case int32:
-					if columns[i].Type == mysql.MediumIntColumnType {
+					if columns[i].Type == config.MediumIntColumnType {
 						abstractValues[i] = uint32(v) & 0x00FFFFFF
 					} else {
 						abstractValues[i] = uint32(v)
@@ -1449,7 +1446,7 @@ func (b *BinlogReader) skipRowEvent(rowsEvent *replication.RowsEvent, dml EventD
 			// We make no special treat for case 2. That tx has only one insert, which should be ignored.
 			if dml == InsertDML {
 				if len(rowsEvent.Rows) == 1 {
-					sidValue := *mysql.ToColumnValues(rowsEvent.Rows[0]).AbstractValues[1]
+					sidValue := *config.ToColumnValues(rowsEvent.Rows[0]).AbstractValues[1]
 					sidByte, ok := sidValue.(string)
 					if !ok {
 						b.logger.Errorf("cycle-prevention: unrecognized gtid_executed table sid type: %T", sidValue)

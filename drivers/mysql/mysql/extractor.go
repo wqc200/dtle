@@ -12,10 +12,9 @@ import (
 	"fmt"
 
 	"github.com/actiontech/dtle/drivers/dtle/common"
-	"github.com/actiontech/dtle/drivers/mysql/mysql"
-	umconf "github.com/actiontech/dtle/drivers/mysql/mysql"
+	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 
-	"github.com/actiontech/dtle/olddtle/internal/g"
+	"github.com/actiontech/dtle/drivers/mysql/g"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
@@ -322,7 +321,7 @@ func (e *Extractor) Run() {
 	}
 
 	if e.mysqlContext.SkipIncrementalCopy {
-		e.logger.info("mysql.extractor. SkipIncrementalCopy")
+		e.logger.Info("mysql.extractor. SkipIncrementalCopy")
 	} else {
 		err := <-e.streamerReadyCh
 		if err != nil {
@@ -414,7 +413,7 @@ func (e *Extractor) inspectTables() (err error) {
 					doTb.TableSchema = doDb.TableSchema
 					doTb.TableSchemaRename = doDb.TableSchemaRename
 					if err := e.inspector.ValidateOriginalTable(doDb.TableSchema, doTb.TableName, doTb); err != nil {
-						e.logger.Warnf("mysql.extractor: %v", err)
+						e.logger.Warn("mysql.extractor: %v", err)
 						continue
 					}
 					db.Tables = append(db.Tables, doTb)
@@ -455,7 +454,7 @@ func (e *Extractor) inspectTables() (err error) {
 								newTable.TableRename = string(reg.ExpandString(nil, tableRenameRegex, table.TableName, match))
 							}
 							if err := e.inspector.ValidateOriginalTable(doDb.TableSchema, table.TableName, newTable); err != nil {
-								e.logger.Warnf("mysql.extractor: %v", err)
+								e.logger.Warn("mysql.extractor: %v", err)
 								continue
 							}
 							db.Tables = append(db.Tables, newTable)
@@ -469,7 +468,7 @@ func (e *Extractor) inspectTables() (err error) {
 						*newTable = *doTb
 						db.Tables = append(db.Tables, newTable)
 						if err := e.inspector.ValidateOriginalTable(doDb.TableSchema, doTb.TableName, doTb); err != nil {
-							e.logger.Warnf("mysql.extractor: %v", err)
+							e.logger.Warn("mysql.extractor: %v", err)
 							continue
 						}
 						db.TableSchemaScope = TABLE
@@ -506,7 +505,7 @@ func (e *Extractor) inspectTables() (err error) {
 					continue
 				}
 				if err := e.inspector.ValidateOriginalTable(dbName, tb.TableName, tb); err != nil {
-					e.logger.Warnf("mysql.extractor: %v", err)
+					e.logger.Warn("mysql.extractor: %v", err)
 					continue
 				}
 
@@ -562,7 +561,7 @@ func (e *Extractor) ignoreTb(dbName, tbName string) bool {
 
 // readTableColumns reads table columns on applier
 func (e *Extractor) readTableColumns() (err error) {
-	e.logger.Printf("mysql.extractor: Examining table structure on extractor")
+	e.logger.Info("mysql.extractor: Examining table structure on extractor")
 	for _, doDb := range e.replicateDoDb {
 		for _, doTb := range doDb.Tables {
 			doTb.OriginalTableColumns, err = base.GetTableColumnsSqle(e.context, doTb.TableSchema, doTb.TableName)
@@ -578,10 +577,10 @@ func (e *Extractor) initNatsPubClient() (err error) {
 	natsAddr := fmt.Sprintf("nats://%s", e.mysqlContext.NatsAddr)
 	sc, err := gonats.Connect(natsAddr)
 	if err != nil {
-		e.logger.Errorf("mysql.extractor: Can't connect nats server %v. make sure a nats streaming server is running.%v", natsAddr, err)
+		e.logger.Error("mysql.extractor: Can't connect nats server %v. make sure a nats streaming server is running.%v", natsAddr, err)
 		return err
 	}
-	e.logger.Debugf("mysql.extractor: Connect nats server %v", natsAddr)
+	e.logger.Debug("mysql.extractor: Connect nats server %v", natsAddr)
 	e.natsConn = sc
 
 	return nil
@@ -590,7 +589,7 @@ func (e *Extractor) initNatsPubClient() (err error) {
 // initiateStreaming begins treaming of binary log events and registers listeners for such events
 func (e *Extractor) initiateStreaming() error {
 	go func() {
-		e.logger.Printf("mysql.extractor: Beginning streaming")
+		e.logger.Info("mysql.extractor: Beginning streaming")
 		err := e.StreamEvents()
 		if err != nil {
 			e.onError(TaskStateDead, err)
@@ -673,19 +672,19 @@ func (e *Extractor) getSchemaTablesAndMeta() error {
 
 			stmts, err := base.ShowCreateTable(e.db, db.TableSchema, tb.TableName, false, false)
 			if err != nil {
-				e.logger.Errorf("error at ShowCreateTable. err: %v", err)
+				e.logger.Error("error at ShowCreateTable. err: %v", err)
 				return err
 			}
 			stmt := stmts[0]
 			ast, err := sqle.ParseCreateTableStmt("mysql", stmt)
 			if err != nil {
-				e.logger.Errorf("error at ParseCreateTableStmt. err: %v", err)
+				e.logger.Error("error at ParseCreateTableStmt. err: %v", err)
 				return err
 			}
 			e.context.UpdateContext(ast, "mysql")
 			if !e.context.HasTable(tb.TableSchema, tb.TableName) {
 				err := fmt.Errorf("failed to add table to sqle context. table: %v.%v", db.TableSchema, tb.TableName)
-				e.logger.Errorf(err.Error())
+				e.logger.Error(err.Error())
 				return err
 			}
 		}
@@ -702,7 +701,7 @@ func (e *Extractor) getSchemaTablesAndMeta() error {
 func (e *Extractor) initBinlogReader(binlogCoordinates *base.BinlogCoordinatesX) {
 	binlogReader, err := binlog.NewMySQLReader(e.execCtx, e.mysqlContext, e.logger, e.replicateDoDb, e.context)
 	if err != nil {
-		e.logger.Debugf("mysql.extractor: err at initBinlogReader: NewMySQLReader: %v", err.Error())
+		e.logger.Debug("mysql.extractor: err at initBinlogReader: NewMySQLReader: %v", err.Error())
 		e.streamerReadyCh <- err
 		return
 	}
@@ -729,7 +728,7 @@ func (e *Extractor) validateConnectionAndGetVersion() error {
 	if e.mysqlVersionDigit == 0 {
 		return fmt.Errorf("cannot parse mysql version string to digit. string %v", e.mysqlContext.MySQLVersion)
 	}
-	e.logger.Printf("mysql.extractor: Connection validated on %s:%d", e.mysqlContext.ConnectionConfig.Host, e.mysqlContext.ConnectionConfig.Port)
+	e.logger.Info("mysql.extractor: Connection validated on %s:%d", e.mysqlContext.ConnectionConfig.Host, e.mysqlContext.ConnectionConfig.Port)
 	return nil
 }
 
@@ -770,7 +769,7 @@ func (e *Extractor) validateAndReadTimeZone() error {
 		return err
 	}
 
-	e.logger.Printf("mysql.extractor: Will use time_zone='%s' on extractor", e.mysqlContext.TimeZone)
+	e.logger.Info("mysql.extractor: Will use time_zone='%s' on extractor", e.mysqlContext.TimeZone)
 	return nil
 }
 
@@ -778,7 +777,7 @@ func (e *Extractor) validateAndReadTimeZone() error {
 func (e *Extractor) CountTableRows(table *config.Table) (int64, error) {
 	atomic.StoreInt64(&e.mysqlContext.CountingRowsFlag, 1)
 	defer atomic.StoreInt64(&e.mysqlContext.CountingRowsFlag, 0)
-	//e.logger.Debugf("mysql.extractor: As instructed, I'm issuing a SELECT COUNT(*) on the table. This may take a while")
+	//e.logger.Debug("mysql.extractor: As instructed, I'm issuing a SELECT COUNT(*) on the table. This may take a while")
 
 	var query string
 	var method string
@@ -798,7 +797,7 @@ func (e *Extractor) CountTableRows(table *config.Table) (int64, error) {
 	atomic.AddInt64(&e.mysqlContext.RowsEstimate, rowsEstimate)
 
 	e.mysqlContext.Stage = models.StageSearchingRowsForUpdate
-	e.logger.Debugf("mysql.extractor: Exact number of rows(%s.%s) via %v: %d", table.TableSchema, table.TableName, method, rowsEstimate)
+	e.logger.Debug("mysql.extractor: Exact number of rows(%s.%s) via %v: %d", table.TableSchema, table.TableName, method, rowsEstimate)
 	return rowsEstimate, nil
 }
 
@@ -840,7 +839,7 @@ func (e *Extractor) readMySqlCharsetSystemVariables() error {
 		return rows.Err()
 	}
 
-	e.logger.Printf("mysql.extractor: Reading MySQL charset-related system variables before parsing DDL history.")
+	e.logger.Info("mysql.extractor: Reading MySQL charset-related system variables before parsing DDL history.")
 	return nil
 }
 
@@ -888,7 +887,7 @@ func (e *Extractor) StreamEvents() error {
 
 	if e.mysqlContext.ApproveHeterogeneous {
 		go func() {
-			defer e.logger.Debugf("extractor. StreamEvents goroutine exited")
+			defer e.logger.Debug("extractor. StreamEvents goroutine exited")
 			entries := binlog.BinlogEntries{}
 			entriesSize := 0
 			sendEntries := func() error {
@@ -901,11 +900,11 @@ func (e *Extractor) StreamEvents() error {
 				if err != nil {
 					return err
 				}
-				e.logger.Debugf("mysql.extractor: sending gno: %v, n: %v", gno, len(entries.Entries))
+				e.logger.Debug("mysql.extractor: sending gno: %v, n: %v", gno, len(entries.Entries))
 				if err = e.publish(ctx, fmt.Sprintf("%s_incr_hete", e.subject), "", txMsg); err != nil {
 					return err
 				}
-				e.logger.Debugf("mysql.extractor: send acked gno: %v, n: %v", gno, len(entries.Entries))
+				e.logger.Debug("mysql.extractor: send acked gno: %v, n: %v", gno, len(entries.Entries))
 
 				entries.Entries = nil
 				entriesSize = 0
@@ -941,9 +940,9 @@ func (e *Extractor) StreamEvents() error {
 						}
 						for _, ip := range addrs {
 							rip := ip.(*net.IPNet).IP.String()
-							e.logger.Debugf("mysql.extractor: self ip is  : %v,natsips is : %v", rip, natsips[0])
+							e.logger.Debug("mysql.extractor: self ip is  : %v,natsips is : %v", rip, natsips[0])
 							if rip == natsips[0] && entriesSize > int(v.Available/16) {
-								err = errors.Errorf("Too much entriesSize , not enough memory ")
+								err = errors.Error("Too much entriesSize , not enough memory ")
 								break
 							}
 						}
@@ -951,10 +950,10 @@ func (e *Extractor) StreamEvents() error {
 					if err != nil {
 						break
 					}
-					e.logger.Debugf("mysql.extractor: err is  : %v", err != nil)
+					e.logger.Debug("mysql.extractor: err is  : %v", err != nil)
 					if entriesSize >= e.mysqlContext.GroupMaxSize ||
 						int64(len(entries.Entries)) == e.mysqlContext.ReplChanBufferSize {
-						e.logger.Debugf("extractor. incr. send by GroupLimit. entriesSize: %v , groupMaxSize: %v,Entries.len: %v", entriesSize, e.mysqlContext.GroupMaxSize, len(entries.Entries))
+						e.logger.Debug("extractor. incr. send by GroupLimit. entriesSize: %v , groupMaxSize: %v,Entries.len: %v", entriesSize, e.mysqlContext.GroupMaxSize, len(entries.Entries))
 						err = sendEntries()
 						if !timer.Stop() {
 							<-timer.C
@@ -965,7 +964,7 @@ func (e *Extractor) StreamEvents() error {
 				case <-timer.C:
 					nEntries := len(entries.Entries)
 					if nEntries > 0 {
-						e.logger.Debugf("extractor. incr. send by timeout. entriesSize: %v,timeout time: %v", entriesSize, e.mysqlContext.GroupTimeout)
+						e.logger.Debug("extractor. incr. send by timeout. entriesSize: %v,timeout time: %v", entriesSize, e.mysqlContext.GroupTimeout)
 						err = sendEntries()
 					}
 					timer.Reset(groupTimeoutDuration)
@@ -1148,13 +1147,13 @@ func (e *Extractor) publish(ctx context.Context, subject, gtid string, txMsg []b
 
 	// Inject span context into our traceMsg.
 	if err := tracer.Inject(span.Context(), opentracing.Binary, &t); err != nil {
-		e.logger.Debugf("mysql.extractor: start tracer fail, got %v", err)
+		e.logger.Debug("mysql.extractor: start tracer fail, got %v", err)
 	}
 	// Add the payload.
 	t.Write(txMsg)
 	defer span.Finish()
 	for {
-		e.logger.Debugf("mysql.extractor: publish. gtid: %v, msg_len: %v", gtid, len(txMsg))
+		e.logger.Debug("mysql.extractor: publish. gtid: %v, msg_len: %v", gtid, len(txMsg))
 		_, err = e.natsConn.Request(subject, t.Bytes(), DefaultConnectWait)
 		if err == nil {
 			if gtid != "" {
@@ -1162,14 +1161,14 @@ func (e *Extractor) publish(ctx context.Context, subject, gtid string, txMsg []b
 			}
 			break
 		} else if err == gonats.ErrTimeout {
-			e.logger.Debugf("mysql.extractor: publish timeout, got %v", err)
+			e.logger.Debug("mysql.extractor: publish timeout, got %v", err)
 			continue
 		} else {
-			e.logger.Errorf("mysql.extractor: unexpected error on publish, got %v", err)
+			e.logger.Error("mysql.extractor: unexpected error on publish, got %v", err)
 			break
 		}
 		// there's an error. Let's try again.
-		e.logger.Debugf(fmt.Sprintf("mysql.extractor: there's an error [%v]. Let's try again", err))
+		e.logger.Debug(fmt.Sprintf("mysql.extractor: there's an error [%v]. Let's try again", err))
 		time.Sleep(1 * time.Second)
 	}
 	return err
@@ -1189,7 +1188,7 @@ func (e *Extractor) sendSysVarAndSqlMode() error {
 		return err
 	}
 	setSystemVariablesStatement := e.setStatementFor()
-	e.logger.Debugf("mysql.extractor: set sysvar query: %v", setSystemVariablesStatement)
+	e.logger.Debug("mysql.extractor: set sysvar query: %v", setSystemVariablesStatement)
 	if err := e.selectSqlMode(); err != nil {
 		return err
 	}
@@ -1225,7 +1224,7 @@ func (e *Extractor) mysqlDump() error {
 	// See: https://dev.mysql.com/doc/refman/5.7/en/set-transaction.html
 	// See: https://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-isolation-levels.html
 	// See: https://dev.mysql.com/doc/refman/5.7/en/innodb-consistent-read.html
-	e.logger.Printf("mysql.extractor: Step %d: disabling autocommit and enabling repeatable read transactions", step)
+	e.logger.Info("mysql.extractor: Step %d: disabling autocommit and enabling repeatable read transactions", step)
 
 	step++
 
@@ -1235,11 +1234,11 @@ func (e *Extractor) mysqlDump() error {
 	// Obtain read lock on all tables. This statement closes all open tables and locks all tables
 	// for all databases with a global read lock, and it prevents ALL updates while we have this lock.
 	// It also ensures that everything we do while we have this lock will be consistent.
-	/*e.logger.Printf("mysql.extractor: Step %d: flush and obtain global read lock (preventing writes to database)", step)
+	/*e.logger.Info("mysql.extractor: Step %d: flush and obtain global read lock (preventing writes to database)", step)
 	query := "FLUSH TABLES WITH READ LOCK"
 	_, err = tx.Exec(query)
 	if err != nil {
-		e.logger.Printf("[ERR] mysql.extractor: exec %+v, error: %v", query, err)
+		e.logger.Info("[ERR] mysql.extractor: exec %+v, error: %v", query, err)
 		return err
 	}
 	step++*/
@@ -1252,7 +1251,7 @@ func (e *Extractor) mysqlDump() error {
 
 	var needConsistentSnapshot = true // TODO determine by table characteristic (has-PK or not)
 	if needConsistentSnapshot {
-		e.logger.Printf("mysql.extractor: Step %d: start transaction with consistent snapshot", step)
+		e.logger.Info("mysql.extractor: Step %d: start transaction with consistent snapshot", step)
 		gtidMatch := false
 		gtidMatchRound := 0
 		delayBetweenRetries := 200 * time.Millisecond
@@ -1262,7 +1261,7 @@ func (e *Extractor) mysqlDump() error {
 			// 1
 			rows1, err := e.singletonDB.Query("show master status")
 			if err != nil {
-				e.logger.Errorf("mysql.extractor: get gtid, round: %v, phase 1, err: %v", gtidMatchRound, err)
+				e.logger.Error("mysql.extractor: get gtid, round: %v, phase 1, err: %v", gtidMatchRound, err)
 				return err
 			}
 
@@ -1279,7 +1278,7 @@ func (e *Extractor) mysqlDump() error {
 			query := "START TRANSACTION WITH CONSISTENT SNAPSHOT"
 			_, err = realTx.Exec(query)
 			if err != nil {
-				e.logger.Printf("[ERR] mysql.extractor: exec %+v, error: %v", query, err)
+				e.logger.Info("[ERR] mysql.extractor: exec %+v, error: %v", query, err)
 				return err
 			}
 
@@ -1297,35 +1296,35 @@ func (e *Extractor) mysqlDump() error {
 			if err != nil {
 				return err
 			}
-			e.logger.Debugf("mysql.extractor: binlog coordinates 1: %+v", binlogCoordinates1)
-			e.logger.Debugf("mysql.extractor: binlog coordinates 2: %+v", binlogCoordinates2)
+			e.logger.Debug("mysql.extractor: binlog coordinates 1: %+v", binlogCoordinates1)
+			e.logger.Debug("mysql.extractor: binlog coordinates 2: %+v", binlogCoordinates2)
 
 			if binlogCoordinates1.GtidSet == binlogCoordinates2.GtidSet {
 				gtidMatch = true
-				e.logger.Infof("Got gtid after %v rounds", gtidMatchRound)
+				e.logger.Info("Got gtid after %v rounds", gtidMatchRound)
 
 				// Obtain the binlog position and update the SourceInfo in the context. This means that all source records generated
 				// as part of the snapshot will contain the binlog position of the snapshot.
 				//binlogCoordinates, err := base.GetSelfBinlogCoordinatesWithTx(tx)
 
 				e.initialBinlogCoordinates = binlogCoordinates2
-				e.logger.Printf("mysql.extractor: Step %d: read binlog coordinates of MySQL master: %+v", step, *e.initialBinlogCoordinates)
+				e.logger.Info("mysql.extractor: Step %d: read binlog coordinates of MySQL master: %+v", step, *e.initialBinlogCoordinates)
 
 				defer func() {
-					/*e.logger.Printf("mysql.extractor: Step %d: releasing global read lock to enable MySQL writes", step)
+					/*e.logger.Info("mysql.extractor: Step %d: releasing global read lock to enable MySQL writes", step)
 					query := "UNLOCK TABLES"
 					_, err := tx.Exec(query)
 					if err != nil {
-						e.logger.Printf("[ERR] mysql.extractor: exec %+v, error: %v", query, err)
+						e.logger.Info("[ERR] mysql.extractor: exec %+v, error: %v", query, err)
 					}
 					step++*/
-					e.logger.Printf("mysql.extractor: Step %d: committing transaction", step)
+					e.logger.Info("mysql.extractor: Step %d: committing transaction", step)
 					if err := realTx.Commit(); err != nil {
 						e.onError(TaskStateDead, err)
 					}
 				}()
 			} else {
-				e.logger.Warningf("Failed got a consistenct TX with GTID in %v rounds. Will retry.", gtidMatchRound)
+				e.logger.Warn("Failed got a consistenct TX with GTID in %v rounds. Will retry.", gtidMatchRound)
 				err = realTx.Rollback()
 				if err != nil {
 					return err
@@ -1334,7 +1333,7 @@ func (e *Extractor) mysqlDump() error {
 			}
 		}
 	} else {
-		e.logger.Debugf("mysql.extractor: no need to get consistent snapshot")
+		e.logger.Debug("mysql.extractor: no need to get consistent snapshot")
 		tx = e.singletonDB
 		rows1, err := tx.Query("show master status")
 		if err != nil {
@@ -1344,7 +1343,7 @@ func (e *Extractor) mysqlDump() error {
 		if err != nil {
 			return err
 		}
-		e.logger.Debugf("mysql.extractor: got gtid")
+		e.logger.Debug("mysql.extractor: got gtid")
 	}
 	step++
 
@@ -1354,7 +1353,7 @@ func (e *Extractor) mysqlDump() error {
 	// Get the list of table IDs for each database. We can't use a prepared statement with MySQL, so we have to
 	// build the SQL statement each time. Although in other cases this might lead to SQL injection, in our case
 	// we are reading the database names from the database and not taking them from the user ...
-	e.logger.Printf("mysql.extractor: Step %d: read list of available tables in each database", step)
+	e.logger.Info("mysql.extractor: Step %d: read list of available tables in each database", step)
 
 	err = e.getSchemaTablesAndMeta()
 	if err != nil {
@@ -1366,7 +1365,7 @@ func (e *Extractor) mysqlDump() error {
 	// Transform the current schema so that it reflects the *current* state of the MySQL server's contents.
 	// First, get the DROP TABLE and CREATE TABLE statement (with keys and constraint definitions) for our tables ...
 	if !e.mysqlContext.SkipCreateDbTable {
-		e.logger.Printf("mysql.extractor: Step %d: - generating DROP and CREATE statements to reflect current database schemas:%v", step, e.replicateDoDb)
+		e.logger.Info("mysql.extractor: Step %d: - generating DROP and CREATE statements to reflect current database schemas:%v", step, e.replicateDoDb)
 	}
 	for _, db := range e.replicateDoDb {
 		if len(db.Tables) > 0 {
@@ -1453,7 +1452,7 @@ func (e *Extractor) mysqlDump() error {
 	// STEP 5
 	// ------
 	// Dump all of the tables and generate source records ...
-	e.logger.Printf("mysql.extractor: Step %d: scanning contents of %d tables", step, e.tableCount)
+	e.logger.Info("mysql.extractor: Step %d: scanning contents of %d tables", step, e.tableCount)
 	startScan := utils.CurrentTimeMillis()
 	counter := 0
 	//pool := models.NewPool(10)
@@ -1464,7 +1463,7 @@ func (e *Extractor) mysqlDump() error {
 			counter++
 			// Obtain a record maker for this table, which knows about the schema ...
 			// Choose how we create statements based on the # of rows ...
-			e.logger.Printf("mysql.extractor: Step %d: - scanning table '%s.%s' (%d of %d tables)", step, t.TableSchema, t.TableName, counter, e.tableCount)
+			e.logger.Info("mysql.extractor: Step %d: - scanning table '%s.%s' (%d of %d tables)", step, t.TableSchema, t.TableName, counter, e.tableCount)
 
 			d := NewDumper(tx, t, e.mysqlContext.ChunkSize, e.logger)
 			if err := d.Dump(); err != nil {
@@ -1504,7 +1503,7 @@ func (e *Extractor) mysqlDump() error {
 	// We've copied all of the tables, but our buffer holds onto the very last record.
 	// First mark the snapshot as complete and then apply the updated offset to the buffered record ...
 	stop := utils.CurrentTimeMillis()
-	e.logger.Printf("mysql.extractor: Step %d: scanned %d rows in %d tables in %s",
+	e.logger.Info("mysql.extractor: Step %d: scanned %d rows in %d tables in %s",
 		step, e.mysqlContext.TotalRowsCopied, e.tableCount, time.Duration(stop-startScan))
 	step++
 
@@ -1619,13 +1618,13 @@ func (e *Extractor) ID() string {
 
 	data, err := json.Marshal(id)
 	if err != nil {
-		e.logger.Errorf("mysql.extractor: Failed to marshal ID to JSON: %s", err)
+		e.logger.Error("mysql.extractor: Failed to marshal ID to JSON: %s", err)
 	}
 	return string(data)
 }
 
 func (e *Extractor) onError(state int, err error) {
-	e.logger.Errorf("mysql.extractor. error: %v", err.Error())
+	e.logger.Error("mysql.extractor. error: %v", err.Error())
 	if e.shutdown {
 		return
 	}
@@ -1639,7 +1638,7 @@ func (e *Extractor) WaitCh() chan *models.WaitResult {
 
 // Shutdown is used to tear down the extractor
 func (e *Extractor) Shutdown() error {
-	e.logger.Debugf("*** Extractor.Shutdown")
+	e.logger.Debug("*** Extractor.Shutdown")
 	e.shutdownLock.Lock()
 	defer e.shutdownLock.Unlock()
 
@@ -1658,24 +1657,24 @@ func (e *Extractor) Shutdown() error {
 	}
 
 	if err := sql.CloseDB(e.singletonDB); err != nil {
-		e.logger.Errorf("Extractor.Shutdown error close singletonDB. err %v", err)
+		e.logger.Error("Extractor.Shutdown error close singletonDB. err %v", err)
 	}
 
 	if err := sql.CloseDB(e.inspector.db); err != nil {
-		e.logger.Errorf("Extractor.Shutdown error close inspector.db. err %v", err)
+		e.logger.Error("Extractor.Shutdown error close inspector.db. err %v", err)
 	}
 
 	if e.binlogReader != nil {
 		if err := e.binlogReader.Close(); err != nil {
-			e.logger.Errorf("Extractor.Shutdown error close binlogReader. err %v", err)
+			e.logger.Error("Extractor.Shutdown error close binlogReader. err %v", err)
 		}
 	}
 
 	if err := sql.CloseDB(e.db); err != nil {
-		e.logger.Errorf("Extractor.Shutdown error close e.db. err %v", err)
+		e.logger.Error("Extractor.Shutdown error close e.db. err %v", err)
 	}
 
 	//close(e.binlogChannel)
-	e.logger.Printf("mysql.extractor: Shutting down")
+	e.logger.Info("mysql.extractor: Shutting down")
 	return nil
 }

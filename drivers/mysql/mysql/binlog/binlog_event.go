@@ -11,8 +11,7 @@ import (
 
 	"github.com/siddontang/go-mysql/replication"
 
-	"github.com/actiontech/dtle/olddtle/internal/config"
-	"github.com/actiontech/dtle/olddtle/internal/config/mysql"
+	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 )
 
 type EventDML string
@@ -82,8 +81,8 @@ type DataEvent struct {
 	TableName         string
 	DML               EventDML
 	ColumnCount       int
-	WhereColumnValues *mysql.ColumnValues
-	NewColumnValues   *mysql.ColumnValues
+	WhereColumnValues *config.ColumnValues
+	NewColumnValues   *config.ColumnValues
 	Table             *config.Table // TODO tmp solution
 	LogPos            int64         // for kafka. The pos of WRITE_ROW_EVENT
 	TableItem         interface{}
