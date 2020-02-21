@@ -1,14 +1,6 @@
-/*
- * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/actiontech/kafkas, github.com/github/gh-ost .
- * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
- */
+package kafka
 
-package mysql
-
-import (
-	gonats "github.com/nats-io/go-nats"
-)
+import "fmt"
 
 const (
 	StageFinishedReadingOneBinlogSwitchingToNextBinlog = "Finished reading one binlog; switching to next binlog"
@@ -24,37 +16,6 @@ const (
 	StageWaitingForMasterToSendEvent                   = "Waiting for master to send event"
 )
 
-type TableStats struct {
-	InsertCount int64
-	UpdateCount int64
-	DelCount    int64
-}
-
-type DelayCount struct {
-	Num  uint64
-	Time uint64
-}
-
-type ThroughputStat struct {
-	Num  uint64
-	Time uint64
-}
-
-type MsgStat struct {
-	InMsgs   uint64
-	OutMsgs  uint64
-	InBytes  uint64
-	OutBytes uint64
-}
-
-type BufferStat struct {
-	ExtractorTxQueueSize    int
-	ApplierTxQueueSize      int
-	ApplierGroupTxQueueSize int
-	SendByTimeout           int
-	SendBySizeFull          int
-}
-
 type CurrentCoordinates struct {
 	File     string
 	Position int64
@@ -65,7 +26,27 @@ type CurrentCoordinates struct {
 	RetrievedGtidSet   string
 	ExecutedGtidSet    string
 }
+type TableStats struct {
+	InsertCount int64
+	UpdateCount int64
+	DelCount    int64
+}
 
+type DelayCount struct {
+	Num  uint64
+	Time uint64
+}
+type ThroughputStat struct {
+	Num  uint64
+	Time uint64
+}
+type BufferStat struct {
+	ExtractorTxQueueSize    int
+	ApplierTxQueueSize      int
+	ApplierGroupTxQueueSize int
+	SendByTimeout           int
+	SendBySizeFull          int
+}
 type TaskStatistics struct {
 	CurrentCoordinates *CurrentCoordinates
 	TableStats         *TableStats
@@ -84,6 +65,28 @@ type TaskStatistics struct {
 	Timestamp          int64
 }
 
-type AllocStatistics struct {
-	Tasks map[string]*TaskStatistics
+// WaitResult stores the result of a Wait operation.
+type WaitResult struct {
+	ExitCode int
+	Err      error
+}
+
+func NewWaitResult(code int, err error) *WaitResult {
+	return &WaitResult{
+		ExitCode: code,
+		Err:      err,
+	}
+}
+
+func (r *WaitResult) Successful() bool {
+	return r.ExitCode == 0 && r.Err == nil
+}
+
+func (r *WaitResult) ShouldRestart() bool {
+	return r.ExitCode == 1 && r.Err != nil
+}
+
+func (r *WaitResult) String() string {
+	return fmt.Sprintf("Wait returned exit code %v, and error %v",
+		r.ExitCode, r.Err)
 }

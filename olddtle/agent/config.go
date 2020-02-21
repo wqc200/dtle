@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/actiontech/dtle, github.com/github/gh-ost .
+ * Based on: github.com/actiontech/kafkas, github.com/github/gh-ost .
  * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
  */
 
@@ -127,7 +127,7 @@ type Config struct {
 	// If provided, the UI endpoints will be enabled.
 	UiDir string `mapstructure:"ui_dir"`
 
-	// Schema name for dtle meta info (e.g. gtid_executed).
+	// Schema name for kafkas meta info (e.g. gtid_executed).
 	// Do not use special characters (which need to be quoted) in schema name.
 	DtleSchemaName string `mapstructure:"dtle_schema_name"`
 
@@ -260,13 +260,13 @@ type Node struct {
 func DefaultConfig() *Config {
 	return &Config{
 		LogLevel:           "INFO",
-		LogFile:            "/var/log/dtle/dtle.log",
+		LogFile:            "/var/log/kafkas/kafkas.log",
 		LogMaxSize:         1024,
 		LogMaxBackups:      100,
 		LogToStdout:        false,
 		PprofSwitch:        false,
 		PprofTime:          0,
-		PidFile:            "/var/run/dtle/dtle.pid",
+		PidFile:            "/var/run/kafkas/kafkas.pid",
 		Region:             "global",
 		Datacenter:         "dc1",
 		BindAddr:           "0.0.0.0",
@@ -306,7 +306,7 @@ func DefaultConfig() *Config {
 		Network: &Network{
 			MaxPayload: DefaultMaxPayload,
 		},
-		DtleSchemaName: "dtle",
+		DtleSchemaName: "kafkas",
 	}
 }
 

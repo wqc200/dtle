@@ -156,7 +156,7 @@ func main() {
 					evt := parseRowsEvent(event)
 					schemaName := string(evt.Table.Schema)
 					tableName := string(evt.Table.Table)
-					if schemaName == "dtle" && tableName == "gtid_executed_v3" {
+					if schemaName == "kafkas" && tableName == "gtid_executed_v3" {
 						if eventType == rep.DELETE_ROWS_EVENTv2 {
 							Printlnf("2 cleanup_meta")
 							cleanupMeta = true

@@ -61,7 +61,7 @@ func (c *Client) Jobs() *Jobs {
 }
 
 // Parse is used to convert the HCL repesentation of a Job to JSON server side.
-// To parse the HCL client side see package github.com/actiontech/dtle/jobspec
+// To parse the HCL client side see package github.com/actiontech/kafkas/jobspec
 func (j *Jobs) ParseHCL(jobHCL string, canonicalize bool) (*Job, error) {
 	var job Job
 	req := &JobsParseRequest{

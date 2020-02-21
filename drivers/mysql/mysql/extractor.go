@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/actiontech/dtle, github.com/github/gh-ost .
+ * Based on: github.com/actiontech/kafkas, github.com/github/gh-ost .
  * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
  */
 
@@ -11,7 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/actiontech/dtle/drivers/dtle/common"
+	"github.com/actiontech/dtle/drivers/kafka/common"
 	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 
 	"github.com/actiontech/dtle/drivers/mysql/g"
@@ -925,7 +925,7 @@ func (e *Extractor) StreamEvents() error {
 				select {
 				case binlogEntry := <-e.dataChannel:
 					spanContext := binlogEntry.SpanContext
-					span := opentracing.GlobalTracer().StartSpan("nat send :begin  send binlogEntry from src dtle to desc dtle", opentracing.ChildOf(spanContext))
+					span := opentracing.GlobalTracer().StartSpan("nat send :begin  send binlogEntry from src kafkas to desc kafkas", opentracing.ChildOf(spanContext))
 					span.SetTag("time", time.Now().Unix())
 					ctx = opentracing.ContextWithSpan(ctx, span)
 					//span.SetTag("timetag", time.Now().Unix())

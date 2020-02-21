@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/actiontech/dtle, github.com/github/gh-ost .
+ * Based on: github.com/actiontech/kafkas, github.com/github/gh-ost .
  * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
  */
 
@@ -17,7 +17,7 @@ type ServerForceLeaveCommand struct {
 
 func (c *ServerForceLeaveCommand) Help() string {
 	helpText := `
-Usage: dtle server-force-leave [options] <node>
+Usage: kafkas server-force-leave [options] <node>
 
   Forces an server to enter the "left" state. This can be used to
   eject nodes which have failed and will not rejoin the cluster.

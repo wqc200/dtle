@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/actiontech/dtle, github.com/github/gh-ost .
+ * Based on: github.com/actiontech/kafkas, github.com/github/gh-ost .
  * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
  */
 
@@ -20,15 +20,15 @@ type OperatorRaftRemoveCommand struct {
 
 func (c *OperatorRaftRemoveCommand) Help() string {
 	helpText := `
-Usage: dtle remove-peer [options]
+Usage: kafkas remove-peer [options]
 
 Remove the Dtle server with given -peer-address from the Raft configuration.
 
 There are rare cases where a peer may be left behind in the Raft quorum even
 though the server is no longer present and known to the cluster. This command
 can be used to remove the failed server so that it is no longer affects the Raft
-quorum. If the server still shows in the output of the "dtle members"
-command, it is preferable to clean up by simply running "dtle
+quorum. If the server still shows in the output of the "kafkas members"
+command, it is preferable to clean up by simply running "kafkas
 server-force-leave" instead of this command.
 
 General Options:

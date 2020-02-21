@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016-2018. ActionTech.
- * Based on: github.com/actiontech/dtle, github.com/github/gh-ost .
+ * Based on: github.com/actiontech/kafkas, github.com/github/gh-ost .
  * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
  */
 
@@ -23,7 +23,7 @@ type ServerMembersCommand struct {
 
 func (c *ServerMembersCommand) Help() string {
 	helpText := `
-Usage: dtle members [options]
+Usage: kafkas members [options]
 
   Display a list of the known managers and their status. Only Dtle managers are
   able to service this command.

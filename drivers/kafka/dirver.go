@@ -1,4 +1,4 @@
-package mysql
+package kafka
 
 import (
 	"context"
@@ -10,13 +10,13 @@ import (
 	"time"
 
 	"github.com/actiontech/dtle/client/fingerprint"
-	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+
 	"github.com/hashicorp/consul-template/signals"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/mitchellh/mapstructure"
 
 	"github.com/actiontech/dtle/drivers/kafka/common"
-	"github.com/actiontech/dtle/drivers/mysql/mysql"
+	"github.com/actiontech/dtle/drivers/kafka/kafka3"
 	"github.com/actiontech/dtle/drivers/shared/eventer"
 	"github.com/actiontech/dtle/drivers/shared/executor"
 	"github.com/actiontech/dtle/helper/pluginutils/loader"
@@ -293,33 +293,19 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if _, ok := d.tasks.Get(cfg.ID); ok {
 		return nil, nil, fmt.Errorf("task with ID %q already started", cfg.ID)
 	}
-	var driverConfig config.MySQLDriverConfig
-	if err := mapstructure.WeakDecode(cfg.TaskConfig, &driverConfig); err != nil {
-		return nil, nil, fmt.Errorf("failed to weakDecode TaskConfig: %v", err)
-	}
 	ctx := &common.ExecContext{cfg.JobName, cfg.TaskGroupName, 100 * 1024 * 1024, cfg.StateDir}
+	var driverConfig kafka3.KafkaConfig
+	if err := mapstructure.WeakDecode(cfg.TaskConfig, &driverConfig); err != nil {
+		return nil, nil, err
+	}
+
 	switch cfg.TaskGroupName {
 	case TaskTypeSrc:
-		{
-			d.logger.Debug("NewExtractor ReplicateDoDb: %v", driverConfig.ReplicateDoDb)
-			// Create the extractor
-			e, err := mysql.NewExtractor(ctx, &driverConfig, d.logger)
-			if err != nil {
-				return nil, nil, fmt.Errorf("failed to create extractor  e: %v", err)
-			}
-			go e.Run()
-
-		}
+		return nil, nil, fmt.Errorf("afka can only be used on 'Dest'")
 	case TaskTypeDest:
-		{
-			d.logger.Warn("NewApplier ReplicateDoDb: %v", driverConfig.ReplicateDoDb)
-			a, err := mysql.NewApplier(ctx, &driverConfig, &d.logger)
-			if err != nil {
-				return nil, nil, fmt.Errorf("failed to create Applier  e: %v", err)
-			}
-			go a.Run()
-
-		}
+		runner := kafka3.NewKafkaRunner(ctx, &driverConfig, d.logger)
+		go runner.Run()
+		return runner, nil, nil
 	default:
 		{
 			return nil, nil, fmt.Errorf("unknown processor type : %+v", cfg.TaskGroupName)
