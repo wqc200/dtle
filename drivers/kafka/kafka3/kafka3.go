@@ -17,19 +17,18 @@ import (
 
 	mysqlDriver "github.com/actiontech/dtle/drivers/mysql/mysql"
 
-	"github.com/golang/snappy"
-	gonats "github.com/nats-io/go-nats"
-
 	"encoding/base64"
 	"encoding/binary"
 	"strings"
-
 	"time"
 
-	kafka "github.com/actiontech/dtle/drivers/kafka"
+	"github.com/actiontech/dtle/drivers/kafka"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/olddtle/utils"
+	"github.com/golang/snappy"
+	gonats "github.com/nats-io/go-nats"
+	"github.com/hashicorp/go-hclog"
 )
 
 const (
@@ -98,14 +97,14 @@ func (kr *KafkaRunner) Shutdown() error {
 	if kr.natsConn != nil {
 		kr.natsConn.Close()
 	}
-	kr.shutdown = trueTaskStatistics
+	kr.shutdown = true
 	close(kr.shutdownCh)
 
 	kr.logger.Info("kafkas: Shutting down")
 	return nil
 }
 
-func (kr *KafkaRunner) Stats() (*kafka.taskStatus, error) {
+func (kr *KafkaRunner) Stats() (*kafka.TaskStatistics, error) {
 	taskResUsage := &kafka.TaskStatistics{}
 	return taskResUsage, nil
 }
