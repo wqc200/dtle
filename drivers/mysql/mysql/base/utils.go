@@ -25,6 +25,7 @@ import (
 	"github.com/actiontech/dtle/drivers/mysql/g"
 	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	usql "github.com/actiontech/dtle/drivers/mysql/mysql/sql"
+	uuid "github.com/satori/go.uuid"
 	gomysql "github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go/hack"
 )

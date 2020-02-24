@@ -16,6 +16,7 @@ import (
 	uconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	usql "github.com/actiontech/dtle/drivers/mysql/mysql/sql"
+	hclog "github.com/hashicorp/go-hclog"
 )
 
 const startSlavePostWaitMilliseconds = 500 * time.Millisecond

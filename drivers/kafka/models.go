@@ -1,6 +1,10 @@
 package kafka
 
-import "fmt"
+import (
+	"fmt"
+
+	gonats "github.com/nats-io/go-nats"
+)
 
 const (
 	StageFinishedReadingOneBinlogSwitchingToNextBinlog = "Finished reading one binlog; switching to next binlog"

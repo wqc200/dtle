@@ -2,8 +2,8 @@ package mysql
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -11,14 +11,14 @@ import (
 
 	"github.com/actiontech/dtle/client/fingerprint"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
-	"github.com/hashicorp/consul-template/signals"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/mitchellh/mapstructure"
 
-	"github.com/actiontech/dtle/drivers/kafka/common"
+	"math/rand"
+
+	"github.com/actiontech/dtle/drivers/mysql/common"
 	"github.com/actiontech/dtle/drivers/mysql/mysql"
 	"github.com/actiontech/dtle/drivers/shared/eventer"
-	"github.com/actiontech/dtle/drivers/shared/executor"
 	"github.com/actiontech/dtle/helper/pluginutils/loader"
 	"github.com/actiontech/dtle/nomad/structs"
 	"github.com/actiontech/dtle/plugins/base"
@@ -97,23 +97,12 @@ func init() {
 	}
 }
 
-// TaskConfig is the driver configuration of a taskConfig within a job
-type TaskConfig struct {
-	Class     string   `codec:"class"`
-	ClassPath string   `codec:"class_path"`
-	JarPath   string   `codec:"jar_path"`
-	JvmOpts   []string `codec:"jvm_options"`
-	Args      []string `codec:"args"` // extra arguments to java executable
-}
-
 // TaskState is the state which is encoded in the handle returned in
 // StartTask. This information is needed to rebuild the taskConfig state and handler
 // during recovery.
 type TaskState struct {
-	ReattachConfig *pstructs.ReattachConfig
-	TaskConfig     *drivers.TaskConfig
-	Pid            int
-	StartedAt      time.Time
+	TaskConfig *drivers.TaskConfig
+	StartedAt  time.Time
 }
 
 // Driver is a driver for running images via Java
@@ -325,71 +314,24 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 			return nil, nil, fmt.Errorf("unknown processor type : %+v", cfg.TaskGroupName)
 		}
 	}
-
-	//return nil, nil
-
-	/*	var driverConfig TaskConfig
-		if err := cfg.DecodeDriverConfig(&driverConfig); err != nil {
-			return nil, nil, fmt.Errorf("failed to decode driver config: %v", err)
-		}
-
-		if driverConfig.Class == "" && driverConfig.JarPath == "" {
-			return nil, nil, fmt.Errorf("jar_path or class must be specified")
-		}
-
-		absPath, err := GetAbsolutePath("java")
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to find java binary: %s", err)
-		}
-
-		args := javaCmdArgs(driverConfig)	*/
-
-	//d.logger.Info("starting mysql task", "driver_cfg", hclog.Fmt("%+v", driverConfig), "args", args)
-
 	handle := drivers.NewTaskHandle(taskHandleVersion)
 	handle.Config = cfg
-
-	pluginLogFile := filepath.Join(cfg.TaskDir().Dir, "executor.out")
-	executorConfig := &executor.ExecutorConfig{
-		LogFile:     pluginLogFile,
-		LogLevel:    "debug",
-		FSIsolation: capabilities.FSIsolation == drivers.FSIsolationChroot,
-	}
-
-	exec, pluginClient, err := executor.CreateExecutor(
-		d.logger.With("task_name", handle.Config.Name, "alloc_id", handle.Config.AllocID),
-		d.nomadConfig, executorConfig)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create executor: %v", err)
-	}
-
-	user := cfg.User
-	if user == "" {
-		user = "nobody"
-	}
-
 	h := &taskHandle{
 		taskConfig: cfg,
 		procState:  drivers.TaskStateRunning,
 		startedAt:  time.Now().Round(time.Millisecond),
 		logger:     d.logger,
 	}
-
 	driverState := TaskState{
-		ReattachConfig: pstructs.ReattachConfigFromGoPlugin(pluginClient.ReattachConfig()),
-		TaskConfig:     cfg,
-		StartedAt:      h.startedAt,
+		TaskConfig: cfg,
+		StartedAt:  time.Now().Round(time.Millisecond),
 	}
-
 	if err := handle.SetDriverState(&driverState); err != nil {
 		d.logger.Error("failed to start task, error setting driver state", "error", err)
-		exec.Shutdown("", 0)
-		pluginClient.Kill()
 		return nil, nil, fmt.Errorf("failed to set driver state: %v", err)
 	}
-
 	d.tasks.Set(cfg.ID, h)
-	go h.run()
+	//go h.run()
 	return handle, nil, nil
 }
 
@@ -479,12 +421,35 @@ func (d *Driver) InspectTask(taskID string) (*drivers.TaskStatus, error) {
 }
 
 func (d *Driver) TaskStats(ctx context.Context, taskID string, interval time.Duration) (<-chan *drivers.TaskResourceUsage, error) {
-	handle, ok := d.tasks.Get(taskID)
-	if !ok {
-		return nil, drivers.ErrTaskNotFound
+	ch := make(chan *drivers.TaskResourceUsage)
+	go d.handleStats(ctx, ch)
+	return ch, nil
+}
+func (d *Driver) handleStats(ctx context.Context, ch chan<- *drivers.TaskResourceUsage) {
+	timer := time.NewTimer(0)
+	for {
+		select {
+		case <-timer.C:
+			// Generate random value for the memory usage
+			s := &drivers.TaskResourceUsage{
+				ResourceUsage: &drivers.ResourceUsage{
+					MemoryStats: &drivers.MemoryStats{
+						RSS:      rand.Uint64(),
+						Measured: []string{"RSS"},
+					},
+				},
+				Timestamp: time.Now().UTC().UnixNano(),
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- s:
+			default:
+			}
+		case <-ctx.Done():
+			return
+		}
 	}
-
-	return handle.exec.Stats(ctx, interval), nil
 }
 
 func (d *Driver) TaskEvents(ctx context.Context) (<-chan *drivers.TaskEvent, error) {
@@ -492,60 +457,29 @@ func (d *Driver) TaskEvents(ctx context.Context) (<-chan *drivers.TaskEvent, err
 }
 
 func (d *Driver) SignalTask(taskID string, signal string) error {
-	handle, ok := d.tasks.Get(taskID)
+	h, ok := d.tasks.Get(taskID)
 	if !ok {
 		return drivers.ErrTaskNotFound
 	}
 
-	sig := os.Interrupt
-	if s, ok := signals.SignalLookup[signal]; ok {
-		sig = s
-	} else {
-		d.logger.Warn("unknown signal to send to task, using SIGINT instead", "signal", signal, "task_id", handle.taskConfig.ID)
-
+	if h.exitResult == nil {
+		return nil
 	}
-	return handle.exec.Signal(sig)
+
+	return errors.New(h.exitResult.Err.Error())
 }
 
 func (d *Driver) ExecTask(taskID string, cmd []string, timeout time.Duration) (*drivers.ExecTaskResult, error) {
-	if len(cmd) == 0 {
-		return nil, fmt.Errorf("error cmd must have at least one value")
-	}
-	handle, ok := d.tasks.Get(taskID)
+	h, ok := d.tasks.Get(taskID)
 	if !ok {
 		return nil, drivers.ErrTaskNotFound
 	}
 
-	out, exitCode, err := handle.exec.Exec(time.Now().Add(timeout), cmd[0], cmd[1:])
-	if err != nil {
-		return nil, err
+	res := drivers.ExecTaskResult{
+		Stdout:     []byte(fmt.Sprintf("Exec(%q, %q)", h.taskConfig.Name, cmd)),
+		ExitResult: &drivers.ExitResult{},
 	}
-
-	return &drivers.ExecTaskResult{
-		Stdout: out,
-		ExitResult: &drivers.ExitResult{
-			ExitCode: exitCode,
-		},
-	}, nil
-}
-
-var _ drivers.ExecTaskStreamingRawDriver = (*Driver)(nil)
-
-func (d *Driver) ExecTaskStreamingRaw(ctx context.Context,
-	taskID string,
-	command []string,
-	tty bool,
-	stream drivers.ExecTaskStream) error {
-
-	if len(command) == 0 {
-		return fmt.Errorf("error cmd must have at least one value")
-	}
-	handle, ok := d.tasks.Get(taskID)
-	if !ok {
-		return drivers.ErrTaskNotFound
-	}
-
-	return handle.exec.ExecStreaming(ctx, command, tty, stream)
+	return &res, nil
 }
 
 // GetAbsolutePath returns the absolute path of the passed binary by resolving

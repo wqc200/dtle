@@ -11,7 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/actiontech/dtle/drivers/kafka/common"
+	"github.com/actiontech/dtle/drivers/mysql/common"
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -37,14 +37,17 @@ import (
 	"encoding/hex"
 	"os"
 
+	models "github.com/actiontech/dtle/drivers/kafka"
 	"github.com/actiontech/dtle/drivers/mysql/g"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
-	"github.com/actiontech/dtle/olddtle/internal/models"
 	"github.com/actiontech/dtle/olddtle/utils"
+	hclog "github.com/hashicorp/go-hclog"
+	not "github.com/nats-io/not.go"
+	uuid "github.com/satori/go.uuid"
 )
 
 const (

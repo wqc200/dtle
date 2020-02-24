@@ -9,6 +9,7 @@ package base
 import (
 	"fmt"
 
+	uuid "github.com/satori/go.uuid"
 	gomysql "github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 )

@@ -26,12 +26,12 @@ windows: build-windows
 build:
 	GO111MODULE=on go build $(GOFLAGS) -o dist/dtle -ldflags \
 		"-X main.Version=$(VERSION) -X main.GitCommit=$(COMMIT) -X main.GitBranch=$(BRANCH)" \
-		./cmd/dtle/main.go
+		./main.go
 
 build-windows:
 	GO111MODULE=on GOOS=windows GOARCH=amd64 go build $(GOFLAGS) -o dist/dtle.exe -ldflags \
 		"-X main.Version=$(VERSION) -X main.GitCommit=$(COMMIT) -X main.GitBranch=$(BRANCH)" \
-		./cmd/dtle/main.go
+		./main.go
 
 build_with_coverage_report: build-coverage-report-tool coverage-report-pre-build build coverage-report-post-build
 

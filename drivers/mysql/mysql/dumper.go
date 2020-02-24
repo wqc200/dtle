@@ -12,18 +12,18 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/actiontech/dtle/olddtle/internal/g"
+	"github.com/actiontech/dtle/drivers/mysql/g"
+	hclog "github.com/hashicorp/go-hclog"
 
 	"time"
 
-	usql "github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sql"
-	"github.com/actiontech/dtle/olddtle/internal/config"
-	umconf "github.com/actiontech/dtle/olddtle/internal/config/mysql"
-	"github.com/sirupsen/logrus"
+	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	usql "github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 )
 
 type dumper struct {
-	logger             *logrus.Entry
+	logger             hclog.Logger
 	chunkSize          int64
 	TableSchema        string
 	EscapedTableSchema string
@@ -48,7 +48,7 @@ type dumper struct {
 }
 
 func NewDumper(db usql.QueryAble, table *config.Table, chunkSize int64,
-	logger *logrus.Entry) *dumper {
+	logger hclog.Logger) *dumper {
 
 	dumper := &dumper{
 		logger:             logger,
@@ -218,15 +218,15 @@ func (d *dumper) getChunkData() (nRows int64, err error) {
 				keepGoing = false
 			case <-timer.C:
 				timer.Reset(pingInterval)
-				d.logger.Debugf("mysql.dumper: resultsChannel full. waiting and ping conn")
+				d.logger.Debug("mysql.dumper: resultsChannel full. waiting and ping conn")
 				var dummy int
 				errPing := d.db.QueryRow("select 1").Scan(&dummy)
 				if errPing != nil {
-					d.logger.Debugf("mysql.dumper: ping query row got error. err: %v", errPing)
+					d.logger.Debug("mysql.dumper: ping query row got error. err: %v", errPing)
 				}
 			}
 		}
-		d.logger.Debugf("mysql.dumper: resultsChannel: %v", len(d.resultsChannel))
+		d.logger.Debug("mysql.dumper: resultsChannel: %v", len(d.resultsChannel))
 	}()
 
 	query := ""
@@ -235,7 +235,7 @@ func (d *dumper) getChunkData() (nRows int64, err error) {
 	} else {
 		query = d.buildQueryOnUniqueKey()
 	}
-	d.logger.Debugf("getChunkData. query: %s", query)
+	d.logger.Debug("getChunkData. query: %s", query)
 
 	if d.doChecksum != 0 {
 		if d.doChecksum == 2 || (d.doChecksum == 1 && d.table.Iteration == 0) {
@@ -244,9 +244,9 @@ func (d *dumper) getChunkData() (nRows int64, err error) {
 			var cs int64
 			err := row.Scan(&table, &cs)
 			if err != nil {
-				d.logger.Debugf("getChunkData checksum_table_err %v %v", table, err)
+				d.logger.Debug("getChunkData checksum_table_err %v %v", table, err)
 			} else {
-				d.logger.Debugf("getChunkData checksum_table %v %v", table, cs)
+				d.logger.Debug("getChunkData checksum_table %v %v", table, cs)
 			}
 		}
 	}
@@ -255,9 +255,9 @@ func (d *dumper) getChunkData() (nRows int64, err error) {
 	d.table.Iteration += 1
 	rows, err := d.db.Query(query)
 	if err != nil {
-		d.logger.Debugf("mysql.dumper. error at select chunk. query: ", query)
+		d.logger.Debug("mysql.dumper. error at select chunk. query: ", query)
 		newErr := fmt.Errorf("mysql.dumper. error at select chunk. err: %v", err)
-		d.logger.Errorf(newErr.Error())
+		d.logger.Error(newErr.Error())
 		return 0, err
 	}
 
@@ -284,7 +284,7 @@ func (d *dumper) getChunkData() (nRows int64, err error) {
 		entry.incrementCounter()
 	}
 
-	d.logger.Debugf("getChunkData. n_row: %d", entry.RowsCount)
+	d.logger.Debug("getChunkData. n_row: %d", entry.RowsCount)
 
 	if entry.RowsCount > 0 {
 		var lastVals []string
@@ -304,7 +304,7 @@ func (d *dumper) getChunkData() (nRows int64, err error) {
 					d.table.UseUniqueKey.LastMaxVals[i] = lastVals[idx]
 				}
 			}
-			d.logger.Debugf("GetLastMaxVal: got %v", d.table.UseUniqueKey.LastMaxVals)
+			d.logger.Debug("GetLastMaxVal: got %v", d.table.UseUniqueKey.LastMaxVals)
 		}
 	}
 	if d.table.TableRename != "" {
@@ -337,16 +337,16 @@ func (d *dumper) Dump() error {
 
 			nRows, err := d.getChunkData()
 			if err != nil {
-				d.logger.Errorf("mysql.dumper: error at dump %v", err)
+				d.logger.Error("mysql.dumper: error at dump %v", err)
 				break
 			}
 
 			if nRows < d.chunkSize {
 				// If nRows < d.chunkSize while there are still more rows, it is a possible mysql bug.
-				d.logger.Infof("mysql.dumper: nRows < d.chunkSize. %v %v", nRows, d.chunkSize)
+				d.logger.Info("mysql.dumper: nRows < d.chunkSize. %v %v", nRows, d.chunkSize)
 			}
 			if nRows == 0 {
-				d.logger.Infof("mysql.dumper: nRows == 0. dump finished. %v %v", nRows, d.chunkSize)
+				d.logger.Info("mysql.dumper: nRows == 0. dump finished. %v %v", nRows, d.chunkSize)
 				break
 			}
 		}

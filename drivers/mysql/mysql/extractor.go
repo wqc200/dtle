@@ -11,7 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/actiontech/dtle/drivers/kafka/common"
+	"github.com/actiontech/dtle/drivers/mysql/common"
 	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 
 	"github.com/actiontech/dtle/drivers/mysql/g"
@@ -41,13 +41,16 @@ import (
 
 	"context"
 
+	models "github.com/actiontech/dtle/drivers/kafka"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	mysql "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 	sqle "github.com/actiontech/dtle/drivers/mysql/mysql/sqle/inspector"
-	"github.com/actiontech/dtle/olddtle/internal/models"
 	"github.com/actiontech/dtle/olddtle/utils"
+	hclog "github.com/hashicorp/go-hclog"
+	not "github.com/nats-io/not.go"
 	"github.com/shirou/gopsutil/mem"
 )
 
@@ -942,7 +945,7 @@ func (e *Extractor) StreamEvents() error {
 							rip := ip.(*net.IPNet).IP.String()
 							e.logger.Debug("mysql.extractor: self ip is  : %v,natsips is : %v", rip, natsips[0])
 							if rip == natsips[0] && entriesSize > int(v.Available/16) {
-								err = errors.Error("Too much entriesSize , not enough memory ")
+								err = errors.Errorf("Too much entriesSize , not enough memory ")
 								break
 							}
 						}

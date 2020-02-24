@@ -1,10 +1,10 @@
+package kafka3
+
 /*
  * Copyright (C) 2016-2018. ActionTech.
  * Based on: github.com/actiontech/kafkas, github.com/github/gh-ost .
  * License: MPL version 2: https://www.mozilla.org/en-US/MPL/2.0 .
  */
-
-package kafka3
 
 import (
 	"bytes"
@@ -27,8 +27,10 @@ import (
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/olddtle/utils"
 	"github.com/golang/snappy"
+
+	hclog "github.com/hashicorp/go-hclog"
 	gonats "github.com/nats-io/go-nats"
-	"github.com/hashicorp/go-hclog"
+	uuid "github.com/satori/go.uuid"
 )
 
 const (
