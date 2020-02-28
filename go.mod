@@ -104,17 +104,18 @@ require (
 	github.com/ulikunitz/xz v0.5.4 // indirect
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	golang.org/x/text v0.3.2
+	github.com/Azure/go-autorest v14.0.0+incompatible //
 	gopkg.in/ini.v1 v1.46.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce // indirect
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.1 // indirect
 )
 
-replace github.com/siddontang/go-mysql => github.com/ffffwh/go-mysql v0.0.0-20190808080311-dd15a3c6
+//replace github.com/siddontang/go-mysql => github.com/ffffwh/go-mysql v0.0.0-20190808080311-dd15a3c6
 
-replace github.com/araddon/qlbridge => github.com/ffffwh/qlbridge v0.0.0-20181026023605-fc2d5205
+//replace github.com/araddon/qlbridge => github.com/ffffwh/qlbridge v0.0.0-20181026023605-fc2d5205
 
-replace github.com/pingcap/dm => /Users/fwh/pro1/dm
+//replace github.com/pingcap/dm => /Users/fwh/pro1/dm
 
-replace github.com/pingcap/parser => /Users/fwh/pro0/go/src/github.com/pingcap/parser
+//replace github.com/pingcap/parser => /Users/fwh/pro0/go/src/github.com/pingcap/parser
 
-replace github.com/pingcap/tidb => /Users/fwh/pro0/go/src/github.com/pingcap/tidb
+//replace github.com/pingcap/tidb => /Users/fwh/pro0/go/src/github.com/pingcap/tidb
