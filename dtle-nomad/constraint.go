@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	multierror "github.com/hashicorp/go-multierror"
+	version "github.com/hashicorp/go-version"
 )
 
 const (

@@ -9,6 +9,7 @@ import (
 
 	"sync"
 
+	multierror "github.com/hashicorp/go-multierror"
 	"github.com/mitchellh/copystructure"
 )
 
