@@ -12,7 +12,7 @@ require (
 	github.com/araddon/qlbridge v0.0.0-20190614144613-77bcb31a8923
 	github.com/armon/go-metrics v0.0.0-20180713145231-3c58d8115a78
 	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.25.41// indirect
+	github.com/aws/aws-sdk-go v1.25.41 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/boltdb/bolt v1.3.1 // indirect
 	github.com/circonus-labs/circonus-gometrics v2.2.1+incompatible // indirect
@@ -104,7 +104,7 @@ require (
 	github.com/ulikunitz/xz v0.5.4 // indirect
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	golang.org/x/text v0.1.0
-	github.com/Azure/go-autorest v10.8.0 //
+	github.com/Azure/go-autorest v10.8.0+incompatible //
 	gopkg.in/ini.v1 v1.46.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce // indirect
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.1 // indirect
@@ -113,7 +113,6 @@ require (
 	github.com/hpcloud/tail v1.0.0
 )
 
-//replace golang.org/grpc => github.com/grpc/grpc-go v1.5.0
 replace github.com/siddontang/go-mysql => github.com/ffffwh/go-mysql v0.0.0-20190808080311-dd15a3c6
 
 replace github.com/araddon/qlbridge => github.com/ffffwh/qlbridge v0.0.0-20181026023605-fc2d5205
