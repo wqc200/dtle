@@ -55,3 +55,8 @@ func (h *taskHandle) run() {
 
 	// TODO: detect if the taskConfig OOMed
 }
+func (h *taskHandle) Destroy() bool {
+	h.stateLock.RLock()
+	//driver.des
+	return h.procState == drivers.TaskStateRunning
+}

@@ -8,6 +8,7 @@ import (
 	"github.com/actiontech/dtle/nomad/structs"
 	log "github.com/hashicorp/go-hclog"
 	memdb "github.com/hashicorp/go-memdb"
+	multierror "github.com/hashicorp/go-multierror"
 )
 
 const (

@@ -128,9 +128,10 @@ type Driver struct {
 	// logger will log to the Nomad agent
 	logger hclog.Logger
 
-	taskName string
-	allocID  string
-	node     *structs.Node
+	taskName  string
+	allocID   string
+	node      *structs.Node
+	extractor *mysql.Extractor
 }
 
 func NewDriver(logger hclog.Logger) drivers.DriverPlugin {
@@ -297,6 +298,7 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 				return nil, nil, fmt.Errorf("failed to create extractor  e: %v", err)
 			}
 			go e.Run()
+			d.extractor = e
 
 		}
 	case TaskTypeDest:
@@ -392,21 +394,9 @@ func (d *Driver) DestroyTask(taskID string, force bool) error {
 	if !ok {
 		return drivers.ErrTaskNotFound
 	}
-
 	if handle.IsRunning() && !force {
 		return fmt.Errorf("cannot destroy running task")
 	}
-
-	/*if !handle.pluginClient.Exited() {
-		if handle.IsRunning() {
-			if err := handle.exec.Shutdown("", 0); err != nil {
-				handle.logger.Error("destroying executor failed", "err", err)
-			}
-		}
-
-		handle.pluginClient.Kill()
-	}*/
-
 	d.tasks.Delete(taskID)
 	return nil
 }
