@@ -76,7 +76,7 @@ fpm_common_args = "-f -s dir --log error \
     DESCRIPTION)
 
 targets = {
-    'dtle' : './cmd/dtle',
+    'dtle' : '../dtle',
 }
 
 supported_builds = {
