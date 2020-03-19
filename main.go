@@ -1,4 +1,4 @@
-package nomad_v10
+package main
 
 import (
 	"bytes"

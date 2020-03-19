@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/actiontech/dtle/olddtle/internal/client/driver/mysql/sqle/g"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/sqle/g"
 
 	"github.com/pingcap/parser"
 	"github.com/pingcap/parser/ast"

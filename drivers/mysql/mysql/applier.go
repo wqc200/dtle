@@ -37,7 +37,7 @@ import (
 	"encoding/hex"
 	"os"
 
-	models "github.com/actiontech/dtle/drivers/kafka"
+	//models "github.com/actiontech/dtle/drivers/mysql/mysql"
 	utils "github.com/actiontech/dtle/drivers/mysql"
 	"github.com/actiontech/dtle/drivers/mysql/g"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
@@ -215,7 +215,7 @@ type Applier struct {
 	dbs                []*sql.Conn
 	db                 *gosql.DB
 	gtidExecuted       base.GtidSet
-	currentCoordinates *models.CurrentCoordinates
+	currentCoordinates *CurrentCoordinates
 	tableItems         mapSchemaTableItems
 
 	rowCopyComplete     chan bool
@@ -231,7 +231,7 @@ type Applier struct {
 	lastAppliedBinlogTx   *binlog.BinlogTx
 
 	natsConn *gonats.Conn
-	waitCh   chan *models.WaitResult
+	waitCh   chan WaitResult
 	wg       sync.WaitGroup
 
 	shutdown     bool
@@ -262,7 +262,7 @@ func NewApplier(ctx *common.ExecContext, cfg *config.MySQLDriverConfig, logger h
 		subject:                 ctx.Subject,
 		subjectUUID:             subjectUUID,
 		mysqlContext:            cfg,
-		currentCoordinates:      &models.CurrentCoordinates{},
+		currentCoordinates:      &CurrentCoordinates{},
 		tableItems:              make(mapSchemaTableItems),
 		rowCopyComplete:         make(chan bool, 1),
 		copyRowsQueue:           make(chan *DumpEntry, 24),
@@ -270,7 +270,7 @@ func NewApplier(ctx *common.ExecContext, cfg *config.MySQLDriverConfig, logger h
 		applyBinlogMtsTxQueue:   make(chan *binlog.BinlogEntry, cfg.ReplChanBufferSize*2),
 		applyBinlogTxQueue:      make(chan *binlog.BinlogTx, cfg.ReplChanBufferSize*2),
 		applyBinlogGroupTxQueue: make(chan []*binlog.BinlogTx, cfg.ReplChanBufferSize*2),
-		waitCh:                  make(chan *models.WaitResult, 1),
+		waitCh:                  make(chan WaitResult, 1),
 		shutdownCh:              make(chan struct{}),
 		printTps:                os.Getenv(g.ENV_PRINT_TPS) != "",
 	}
@@ -443,7 +443,7 @@ func (a *Applier) executeWriteFuncs() {
 
 	if a.mysqlContext.Gtid == "" {
 		a.logger.Info("mysql.applier: Operating until row copy is complete")
-		a.mysqlContext.Stage = models.StageSlaveWaitingForWorkersToProcessQueue
+		a.mysqlContext.Stage =  StageSlaveWaitingForWorkersToProcessQueue
 		for {
 			if atomic.LoadInt64(&a.rowCopyCompleteFlag) == 1 && a.mysqlContext.TotalRowsCopied == a.mysqlContext.TotalRowsReplay {
 				a.rowCopyComplete <- true
@@ -868,7 +868,7 @@ func (a *Applier) initiateStreaming() error {
 		case a.copyRowsQueue <- dumpData:
 			a.logger.Debug("mysql.applier: full. enqueue")
 			timer.Stop()
-			a.mysqlContext.Stage = models.StageSlaveWaitingForWorkersToProcessQueue
+			a.mysqlContext.Stage =  StageSlaveWaitingForWorkersToProcessQueue
 			if err := a.natsConn.Publish(m.Reply, nil); err != nil {
 				a.onError(TaskStateDead, err)
 			}
@@ -878,7 +878,7 @@ func (a *Applier) initiateStreaming() error {
 			atomic.AddInt64(&a.nDumpEntry, -1)
 
 			a.logger.Debug("mysql.applier. full. discarding entries")
-			a.mysqlContext.Stage = models.StageSlaveWaitingForWorkersToProcessQueue
+			a.mysqlContext.Stage =  StageSlaveWaitingForWorkersToProcessQueue
 		}
 	})
 	/*if err := sub.SetPendingLimits(a.mysqlContext.MsgsLimit, a.mysqlContext.BytesLimit); err != nil {
@@ -904,7 +904,7 @@ func (a *Applier) initiateStreaming() error {
 		a.currentCoordinates.File = dumpData.LogFile
 		a.currentCoordinates.Position = dumpData.LogPos
 
-		a.mysqlContext.Stage = models.StageSlaveWaitingForWorkersToProcessQueue
+		a.mysqlContext.Stage =  StageSlaveWaitingForWorkersToProcessQueue
 
 		for atomic.LoadInt64(&a.nDumpEntry) != 0 {
 			a.logger.Debug("mysql.applier. nDumpEntry is not zero, waiting. %v", a.nDumpEntry)
@@ -959,7 +959,7 @@ func (a *Applier) initiateStreaming() error {
 						a.currentCoordinates.RetrievedGtidSet = binlogEntry.Coordinates.GetGtidForThisTx()
 						atomic.AddInt64(&a.mysqlContext.DeltaEstimate, 1)
 					}
-					a.mysqlContext.Stage = models.StageWaitingForMasterToSendEvent
+					a.mysqlContext.Stage =  StageWaitingForMasterToSendEvent
 
 					if err := a.natsConn.Publish(m.Reply, nil); err != nil {
 						a.onError(TaskStateDead, err)
@@ -972,7 +972,7 @@ func (a *Applier) initiateStreaming() error {
 			if !handled {
 				// discard these entries
 				a.logger.Debug("applier. incr. discarding entries")
-				a.mysqlContext.Stage = models.StageWaitingForMasterToSendEvent
+				a.mysqlContext.Stage =  StageWaitingForMasterToSendEvent
 			}
 		})
 		if err != nil {
@@ -1498,7 +1498,7 @@ func (a *Applier) ApplyBinlogEvent(ctx context.Context, workerIdx int, binlogEnt
 	}
 
 	// no error
-	a.mysqlContext.Stage = models.StageWaitingForGtidToBeCommitted
+	a.mysqlContext.Stage =  StageWaitingForGtidToBeCommitted
 	atomic.AddInt64(&a.mysqlContext.TotalDeltaCopied, 1)
 	return nil
 }
@@ -1619,7 +1619,7 @@ func (a *Applier) ApplyEventQueries(db *gosql.DB, entry *DumpEntry) error {
 	return nil
 }
 
-func (a *Applier) Stats() (*models.TaskStatistics, error) {
+func (a *Applier) Stats() (*TaskStatistics, error) {
 	totalRowsReplay := a.mysqlContext.GetTotalRowsReplay()
 	rowsEstimate := atomic.LoadInt64(&a.mysqlContext.RowsEstimate)
 	totalDeltaCopied := a.mysqlContext.GetTotalDeltaCopied()
@@ -1644,7 +1644,7 @@ func (a *Applier) Stats() (*models.TaskStatistics, error) {
 	eta = "N/A"
 	if progressPct >= 100.0 {
 		eta = "0s"
-		a.mysqlContext.Stage = models.StageSlaveHasReadAllRelayLog
+		a.mysqlContext.Stage =  StageSlaveHasReadAllRelayLog
 	} else if progressPct >= 1.0 {
 		elapsedRowCopySeconds := a.mysqlContext.ElapsedRowCopyTime().Seconds()
 		totalExpectedSeconds := elapsedRowCopySeconds * float64(rowsEstimate) / float64(totalRowsReplay)
@@ -1660,7 +1660,7 @@ func (a *Applier) Stats() (*models.TaskStatistics, error) {
 		}
 	}
 
-	taskResUsage := models.TaskStatistics{
+	taskResUsage :=  TaskStatistics{
 		ExecMasterRowCount: totalRowsReplay,
 		ExecMasterTxCount:  totalDeltaCopied,
 		ReadMasterRowCount: rowsEstimate,
@@ -1670,7 +1670,7 @@ func (a *Applier) Stats() (*models.TaskStatistics, error) {
 		Backlog:            backlog,
 		Stage:              a.mysqlContext.Stage,
 		CurrentCoordinates: a.currentCoordinates,
-		BufferStat: models.BufferStat{
+		BufferStat:  BufferStat{
 			ApplierTxQueueSize:      len(a.applyBinlogTxQueue),
 			ApplierGroupTxQueueSize: len(a.applyBinlogGroupTxQueue),
 		},
@@ -1725,11 +1725,11 @@ func (a *Applier) onError(state int, err error) {
 		}
 	}
 
-	a.waitCh <- models.NewWaitResult(state, err)
+	a.waitCh <- *NewWaitResult(state, err)
 	a.Shutdown()
 }
 
-func (a *Applier) WaitCh() chan *models.WaitResult {
+func (a *Applier) WaitCh() chan WaitResult {
 	return a.waitCh
 }
 

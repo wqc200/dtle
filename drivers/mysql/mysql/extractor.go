@@ -41,7 +41,7 @@ import (
 
 	"context"
 
-	models "github.com/actiontech/dtle/drivers/kafka"
+	models "github.com/actiontech/dtle/drivers/mysql/mysql"
 	utils "github.com/actiontech/dtle/drivers/mysql"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
