@@ -11,10 +11,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/actiontech/dtle/drivers/mysql/common"
-	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/common"
+//	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 
-	"github.com/actiontech/dtle/drivers/mysql/g"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/g"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
@@ -41,18 +41,18 @@ import (
 
 	"context"
 
-	models "github.com/actiontech/dtle/drivers/mysql/mysql"
-	utils "github.com/actiontech/dtle/drivers/mysql"
+
+	utils "github.com/actiontech/dtle/drivers/mysql/mysql/util"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
-	mysql "github.com/actiontech/dtle/drivers/mysql/mysql/config"
+	//mysql "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 	sqle "github.com/actiontech/dtle/drivers/mysql/mysql/sqle/inspector"
-	hclog "github.com/hashicorp/go-hclog"
-	not "github.com/nats-io/not.go"
+	"github.com/hashicorp/go-hclog"
+	"github.com/nats-io/not.go"
 	"github.com/shirou/gopsutil/mem"
-)
+	)
 
 const (
 	// DefaultConnectWait is the default timeout used for the connect operation
@@ -93,7 +93,7 @@ type Extractor struct {
 	sendBySizeFullCounter int
 
 	natsConn *gonats.Conn
-	waitCh   chan *models.WaitResult
+	waitCh   chan *WaitResult
 
 	shutdown     bool
 	shutdownCh   chan struct{}
@@ -124,7 +124,7 @@ func NewExtractor(execCtx *common.ExecContext, cfg *config.MySQLDriverConfig, lo
 		binlogChannel:   make(chan *binlog.BinlogTx, cfg.ReplChanBufferSize),
 		dataChannel:     make(chan *binlog.BinlogEntry, cfg.ReplChanBufferSize),
 		rowCopyComplete: make(chan bool),
-		waitCh:          make(chan *models.WaitResult, 1),
+		waitCh:          make(chan *WaitResult, 1),
 		shutdownCh:      make(chan struct{}),
 		testStub1Delay:  0,
 		context:         sqle.NewContext(nil),
@@ -791,7 +791,7 @@ func (e *Extractor) CountTableRows(table *config.Table) (int64, error) {
 	} else {
 		method = "COUNT"
 		query = fmt.Sprintf(`select count(*) from %s.%s where (%s)`,
-			mysql.EscapeName(table.TableSchema), mysql.EscapeName(table.TableName), table.Where)
+			config.EscapeName(table.TableSchema), config.EscapeName(table.TableName), table.Where)
 	}
 	var rowsEstimate int64
 	if err := e.db.QueryRow(query).Scan(&rowsEstimate); err != nil {
@@ -799,7 +799,7 @@ func (e *Extractor) CountTableRows(table *config.Table) (int64, error) {
 	}
 	atomic.AddInt64(&e.mysqlContext.RowsEstimate, rowsEstimate)
 
-	e.mysqlContext.Stage = models.StageSearchingRowsForUpdate
+	e.mysqlContext.Stage = StageSearchingRowsForUpdate
 	e.logger.Debug("mysql.extractor: Exact number of rows(%s.%s) via %v: %d", table.TableSchema, table.TableName, method, rowsEstimate)
 	return rowsEstimate, nil
 }
@@ -976,7 +976,7 @@ func (e *Extractor) StreamEvents() error {
 					e.onError(TaskStateDead, err)
 					keepGoing = false
 				} else {
-					e.mysqlContext.Stage = models.StageSendingBinlogEventToSlave
+					e.mysqlContext.Stage = StageSendingBinlogEventToSlave
 					atomic.AddInt64(&e.mysqlContext.DeltaEstimate, 1)
 				}
 			}
@@ -1387,9 +1387,9 @@ func (e *Extractor) mysqlDump() error {
 					var err error
 					if strings.ToLower(tb.TableSchema) != "mysql" {
 						if db.TableSchemaRename != "" {
-							dbSQL = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", umconf.EscapeName(tb.TableSchemaRename))
+							dbSQL = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", config.EscapeName(tb.TableSchemaRename))
 						} else {
-							dbSQL = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", umconf.EscapeName(tb.TableSchema))
+							dbSQL = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", config.EscapeName(tb.TableSchema))
 						}
 					}
 					if strings.ToLower(tb.TableType) == "view" {
@@ -1400,11 +1400,11 @@ func (e *Extractor) mysqlDump() error {
 					} else if strings.ToLower(tb.TableSchema) != "mysql" {
 						tbSQL, err = base.ShowCreateTable(e.singletonDB, tb.TableSchema, tb.TableName, e.mysqlContext.DropTableIfExists, true)
 						for num, sql := range tbSQL {
-							if db.TableSchemaRename != "" && strings.Contains(sql, fmt.Sprintf("USE %s", umconf.EscapeName(tb.TableSchema))) {
+							if db.TableSchemaRename != "" && strings.Contains(sql, fmt.Sprintf("USE %s", config.EscapeName(tb.TableSchema))) {
 								tbSQL[num] = strings.Replace(sql, tb.TableSchema, db.TableSchemaRename, 1)
 							}
-							if tb.TableRename != "" && (strings.Contains(sql, fmt.Sprintf("DROP TABLE IF EXISTS %s", umconf.EscapeName(tb.TableName))) || strings.Contains(sql, "CREATE TABLE")) {
-								tbSQL[num] = strings.Replace(sql, umconf.EscapeName(tb.TableName), tb.TableRename, 1)
+							if tb.TableRename != "" && (strings.Contains(sql, fmt.Sprintf("DROP TABLE IF EXISTS %s", config.EscapeName(tb.TableName))) || strings.Contains(sql, "CREATE TABLE")) {
+								tbSQL[num] = strings.Replace(sql, config.EscapeName(tb.TableName), tb.TableRename, 1)
 							}
 						}
 						if err != nil {
@@ -1430,9 +1430,9 @@ func (e *Extractor) mysqlDump() error {
 			if !e.mysqlContext.SkipCreateDbTable {
 				if strings.ToLower(db.TableSchema) != "mysql" {
 					if db.TableSchemaRename != "" {
-						dbSQL = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", umconf.EscapeName(db.TableSchemaRename))
+						dbSQL = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", config.EscapeName(db.TableSchemaRename))
 					} else {
-						dbSQL = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", umconf.EscapeName(db.TableSchema))
+						dbSQL = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", config.EscapeName(db.TableSchema))
 					}
 
 				}
@@ -1526,11 +1526,11 @@ func (e *Extractor) encodeDumpEntry(entry *DumpEntry) error {
 	if err := e.publish(ctx, fmt.Sprintf("%s_full", e.subject), "", txMsg); err != nil {
 		return err
 	}
-	e.mysqlContext.Stage = models.StageSendingData
+	e.mysqlContext.Stage = StageSendingData
 	return nil
 }
 
-func (e *Extractor) Stats() (*models.TaskStatistics, error) {
+func (e *Extractor) Stats() (*TaskStatistics, error) {
 	totalRowsCopied := e.mysqlContext.GetTotalRowsCopied()
 	rowsEstimate := atomic.LoadInt64(&e.mysqlContext.RowsEstimate)
 	deltaEstimate := atomic.LoadInt64(&e.mysqlContext.DeltaEstimate)
@@ -1551,7 +1551,7 @@ func (e *Extractor) Stats() (*models.TaskStatistics, error) {
 	eta = "N/A"
 	if progressPct >= 100.0 {
 		eta = "0s"
-		e.mysqlContext.Stage = models.StageMasterHasSentAllBinlogToSlave
+		e.mysqlContext.Stage = StageMasterHasSentAllBinlogToSlave
 	} else if progressPct >= 1.0 {
 		elapsedRowCopySeconds := e.mysqlContext.ElapsedRowCopyTime().Seconds()
 		totalExpectedSeconds := elapsedRowCopySeconds * float64(rowsEstimate) / float64(totalRowsCopied)
@@ -1564,7 +1564,7 @@ func (e *Extractor) Stats() (*models.TaskStatistics, error) {
 		}
 	}
 
-	taskResUsage := models.TaskStatistics{
+	taskResUsage :=  TaskStatistics{
 		ExecMasterRowCount: totalRowsCopied,
 		ExecMasterTxCount:  deltaEstimate,
 		ReadMasterRowCount: rowsEstimate,
@@ -1573,7 +1573,7 @@ func (e *Extractor) Stats() (*models.TaskStatistics, error) {
 		ETA:                eta,
 		Backlog:            fmt.Sprintf("%d/%d", len(e.dataChannel), cap(e.dataChannel)),
 		Stage:              e.mysqlContext.Stage,
-		BufferStat: models.BufferStat{
+		BufferStat: BufferStat{
 			ExtractorTxQueueSize: len(e.binlogChannel),
 			SendByTimeout:        e.sendByTimeoutCounter,
 			SendBySizeFull:       e.sendBySizeFullCounter,
@@ -1591,13 +1591,13 @@ func (e *Extractor) Stats() (*models.TaskStatistics, error) {
 	currentBinlogCoordinates := &base.BinlogCoordinateTx{}
 	if e.binlogReader != nil {
 		currentBinlogCoordinates = e.binlogReader.GetCurrentBinlogCoordinates()
-		taskResUsage.CurrentCoordinates = &models.CurrentCoordinates{
+		taskResUsage.CurrentCoordinates = &CurrentCoordinates{
 			File:     currentBinlogCoordinates.LogFile,
 			Position: currentBinlogCoordinates.LogPos,
 			GtidSet:  fmt.Sprintf("%s:%d", currentBinlogCoordinates.GetSid(), currentBinlogCoordinates.GNO),
 		}
 	} else {
-		taskResUsage.CurrentCoordinates = &models.CurrentCoordinates{
+		taskResUsage.CurrentCoordinates = &CurrentCoordinates{
 			File:     "",
 			Position: 0,
 			GtidSet:  "",
@@ -1631,11 +1631,11 @@ func (e *Extractor) onError(state int, err error) {
 	if e.shutdown {
 		return
 	}
-	e.waitCh <- models.NewWaitResult(state, err)
+	e.waitCh <- NewWaitResult(state, err)
 	e.Shutdown()
 }
 
-func (e *Extractor) WaitCh() chan *models.WaitResult {
+func (e *Extractor) WaitCh() chan *WaitResult {
 	return e.waitCh
 }
 

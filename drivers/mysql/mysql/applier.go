@@ -11,7 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/actiontech/dtle/drivers/mysql/common"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/common"
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -38,8 +38,8 @@ import (
 	"os"
 
 	//models "github.com/actiontech/dtle/drivers/mysql/mysql"
-	utils "github.com/actiontech/dtle/drivers/mysql"
-	"github.com/actiontech/dtle/drivers/mysql/g"
+	utils "github.com/actiontech/dtle/drivers/mysql/mysql/util"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/g"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"

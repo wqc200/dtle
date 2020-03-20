@@ -22,7 +22,7 @@ import (
 
 	"database/sql"
 
-	"github.com/actiontech/dtle/drivers/mysql/g"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/g"
 	umconf "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	usql "github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 	uuid "github.com/satori/go.uuid"

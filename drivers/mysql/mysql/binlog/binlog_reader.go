@@ -16,12 +16,12 @@ import (
 
 	"github.com/cznic/mathutil"
 
-	"github.com/actiontech/dtle/drivers/mysql/common"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/common"
 	"github.com/pingcap/dm/dm/pb"
 	"github.com/pingcap/dm/pkg/gtid"
 	"github.com/pingcap/dm/pkg/streamer"
 
-	"github.com/actiontech/dtle/drivers/mysql/g"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/g"
 	//"encoding/hex"
 	"fmt"
 	"regexp"
@@ -36,14 +36,13 @@ import (
 	"github.com/pingcap/parser/ast"
 	_ "github.com/pingcap/tidb/types/parser_driver"
 
-	models "github.com/actiontech/dtle/drivers/mysql/mysql"
 	"github.com/actiontech/dtle/drivers/mysql/mysql"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 	sqle "github.com/actiontech/dtle/drivers/mysql/mysql/sqle/inspector"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/util"
-    utils	"github.com/actiontech/dtle/drivers/mysql"
+    utils	"github.com/actiontech/dtle/drivers/mysql/mysql"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/opentracing/opentracing-go"
 	dmrelay "github.com/pingcap/dm/relay"
@@ -381,7 +380,7 @@ func (b *BinlogReader) ConnectBinlogStreamer(coordinates base.BinlogCoordinatesX
 			return err
 		}
 	}
-	b.mysqlContext.Stage = models.StageRequestingBinlogDump
+	b.mysqlContext.Stage = mysql.StageRequestingBinlogDump
 
 	return nil
 }
@@ -879,7 +878,7 @@ func (b *BinlogReader) DataStreamEvents(entriesChannel chan<- *BinlogEntry) erro
 					defer b.currentCoordinatesMutex.Unlock()
 					b.currentCoordinates.LogFile = string(rotateEvent.NextLogName)
 				}()
-				b.mysqlContext.Stage = models.StageFinishedReadingOneBinlogSwitchingToNextBinlog
+				b.mysqlContext.Stage = mysql.StageFinishedReadingOneBinlogSwitchingToNextBinlog
 				b.logger.Info("mysql.reader: Rotate to next log name: %s", rotateEvent.NextLogName)
 			} else {
 				b.logger.Warn("mysql.reader: fake rotate_event.")

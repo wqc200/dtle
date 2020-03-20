@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/actiontech/dtle/drivers/kafka"
+	//"github.com/actiontech/dtle/drivers/kafka"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/binlog"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	utils "github.com/actiontech/dtle/drivers/mysql"
@@ -44,7 +44,7 @@ type KafkaRunner struct {
 	subject     string
 	subjectUUID uuid.UUID
 	natsConn    *gonats.Conn
-	waitCh      chan *kafka.WaitResult
+	waitCh      chan *WaitResult
 
 	shutdown   bool
 	shutdownCh chan struct{}
@@ -63,7 +63,7 @@ func NewKafkaRunner(execCtx *common.ExecContext, cfg *KafkaConfig, logger hclog.
 		subject:     execCtx.Subject,
 		kafkaConfig: cfg,
 		logger:      logger,
-		waitCh:      make(chan *kafka.WaitResult, 1),
+		waitCh:      make(chan *WaitResult, 1),
 		shutdownCh:  make(chan struct{}),
 		tables:      make(map[string](map[string]*config.Table)),
 	}
@@ -88,7 +88,7 @@ func (kr *KafkaRunner) ID() string {
 	return string(data)
 }
 
-func (kr *KafkaRunner) WaitCh() chan *kafka.WaitResult {
+func (kr *KafkaRunner) WaitCh() chan *WaitResult {
 	return kr.waitCh
 }
 
@@ -106,8 +106,8 @@ func (kr *KafkaRunner) Shutdown() error {
 	return nil
 }
 
-func (kr *KafkaRunner) Stats() (*kafka.TaskStatistics, error) {
-	taskResUsage := &kafka.TaskStatistics{}
+func (kr *KafkaRunner) Stats() (*TaskStatistics, error) {
+	taskResUsage := &TaskStatistics{}
 	return taskResUsage, nil
 }
 func (kr *KafkaRunner) initNatSubClient() (err error) {
@@ -287,7 +287,7 @@ func (kr *KafkaRunner) onError(state int, err error) {
 		}
 	}
 
-	kr.waitCh <- kafka.NewWaitResult(state, err)
+	kr.waitCh <- NewWaitResult(state, err)
 	kr.Shutdown()
 }
 

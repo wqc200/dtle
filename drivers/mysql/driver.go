@@ -16,7 +16,7 @@ import (
 
 	"math/rand"
 
-	"github.com/actiontech/dtle/drivers/mysql/common"
+	"github.com/actiontech/dtle/drivers/mysql/mysql/common"
 	"github.com/actiontech/dtle/drivers/mysql/mysql"
 	"github.com/actiontech/dtle/drivers/shared/eventer"
 	"github.com/actiontech/dtle/helper/pluginutils/loader"
