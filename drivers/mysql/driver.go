@@ -9,21 +9,18 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/actiontech/dtle/client/fingerprint"
-
-	"github.com/hashicorp/go-hclog"
+		"github.com/hashicorp/go-hclog"
 		"math/rand"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/common"
-	mysql "github.com/actiontech/dtle/drivers/mysql/mysql"
+	"github.com/actiontech/dtle/drivers/mysql/mysql"
 //	"github.com/actiontech/dtle/drivers/mysql/mysql"
 	"github.com/actiontech/dtle/drivers/shared/eventer"
 	"github.com/actiontech/dtle/helper/pluginutils/loader"
 	"github.com/actiontech/dtle/nomad/structs"
 	"github.com/actiontech/dtle/plugins/base"
 	"github.com/actiontech/dtle/plugins/drivers"
-	"github.com/actiontech/dtle/plugins/drivers/utils"
-	"github.com/actiontech/dtle/plugins/shared/hclspec"
+		"github.com/actiontech/dtle/plugins/shared/hclspec"
 	pstructs "github.com/actiontech/dtle/plugins/shared/structs"
 )
 
@@ -130,7 +127,7 @@ type Driver struct {
 	taskName  string
 	allocID   string
 	node      *structs.Node
-//	extractor *mysql.Extractor
+	extractor *mysql.Extractor
 }
 
 
@@ -179,6 +176,9 @@ func (d *Driver) Fingerprint(ctx context.Context) (<-chan *drivers.Fingerprint, 
 	return ch, nil
 }
 
+//It allows the driver to indicate its health to the client.
+// The channel returned should immediately send an initial Fingerprint,
+// then send periodic updates at an interval that is appropriate for the driver until the context is canceled.
 func (d *Driver) handleFingerprint(ctx context.Context, ch chan *drivers.Fingerprint) {
 	ticker := time.NewTimer(0)
 	for {
@@ -194,51 +194,26 @@ func (d *Driver) handleFingerprint(ctx context.Context, ch chan *drivers.Fingerp
 	}
 }
 
+//get the driver status
 func (d *Driver) buildFingerprint() *drivers.Fingerprint {
-	fp := &drivers.Fingerprint{
-		Attributes:        map[string]*pstructs.Attribute{},
-		Health:            drivers.HealthStateHealthy,
-		HealthDescription: drivers.DriverHealthy,
+
+	var health drivers.HealthState
+	var desc string
+	attrs := map[string]*pstructs.Attribute{}
+	if  runtime.GOOS == "linux" {
+		health = drivers.HealthStateHealthy
+		desc = "ready"
+		attrs["driver.mysql"] = pstructs.NewBoolAttribute(true)
+		attrs["driver.mysql.version"] = pstructs.NewStringAttribute("12")
+	} else {
+		health = drivers.HealthStateUndetected
+		desc = "disabled"
 	}
-
-	if runtime.GOOS == "linux" {
-		// Only enable if w are root and cgroups are mounted when running on linux system
-		if !utils.IsUnixRoot() {
-			fp.Health = drivers.HealthStateUndetected
-			fp.HealthDescription = drivers.DriverRequiresRootMessage
-			return fp
-		}
-
-		mount, err := fingerprint.FindCgroupMountpointDir()
-		if err != nil {
-			fp.Health = drivers.HealthStateUnhealthy
-			fp.HealthDescription = drivers.NoCgroupMountMessage
-			d.logger.Warn(fp.HealthDescription, "error", err)
-			return fp
-		}
-
-		if mount == "" {
-			fp.Health = drivers.HealthStateUnhealthy
-			fp.HealthDescription = drivers.CgroupMountEmpty
-			return fp
-		}
+	return &drivers.Fingerprint{
+		Attributes:        attrs,
+		Health:            health,
+		HealthDescription: desc,
 	}
-
-	/*version, runtime, vm, err := javaVersionInfo()
-	if err != nil {
-		// return no error, as it isn't an error to not find java, it just means we
-		// can't use it.
-		fp.Health = drivers.HealthStateUndetected
-		fp.HealthDescription = ""
-		return fp
-	}*/
-
-	fp.Attributes[driverAttr] = pstructs.NewBoolAttribute(true)
-	//fp.Attributes[driverVersionAttr] = pstructs.NewStringAttribute(version)
-	//	fp.Attributes["driver.java.runtime"] = pstructs.NewStringAttribute(runtime)
-	//	fp.Attributes["driver.java.vm"] = pstructs.NewStringAttribute(vm)
-
-	return fp
 }
 
 func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
@@ -283,14 +258,6 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if _, ok := d.tasks.Get(cfg.ID); ok {
 		return nil, nil, fmt.Errorf("task with ID %q already started", cfg.ID)
 	}
-	/*var driverConfig config.MySQLDriverConfig
-	if err := mapstructure.WeakDecode(cfg.DriverConfig, &driverConfig); err != nil {
-		return nil, nil, fmt.Errorf("failed to weakDecode TaskConfig: %v", err)
-	}*/
-/*	err:=dtleExec(cfg,&d.logger)
-	if  err!=nil{
-		return nil, nil, nil
-	}*/
 	var driverConfig config.MySQLDriverConfig
 	if err := cfg.DecodeDriverConfig(&driverConfig); err != nil {
 		return nil ,nil , fmt.Errorf("failed to decode driver config: %v", err)
@@ -342,7 +309,7 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 		return nil, nil, fmt.Errorf("failed to set driver state: %v", err)
 	}
 	d.tasks.Set(cfg.ID, h)
-	//go h.run()
+	go h.run()
 	return handle, nil, nil
 }
 
@@ -406,6 +373,7 @@ func (d *Driver) DestroyTask(taskID string, force bool) error {
 	if handle.IsRunning() && !force {
 		return fmt.Errorf("cannot destroy running task")
 	}
+	handle.Destroy()
 	d.tasks.Delete(taskID)
 	return nil
 }
