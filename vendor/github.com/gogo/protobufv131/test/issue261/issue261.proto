@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package issue261;
+
+import "github.com/gogo/protobufv131/gogoproto/gogo.proto";
+
+import "google/protobufv131/duration.proto";
+
+message MapStdTypes {
+	map<int32,google.protobuf.Duration> nullableDuration = 3 [(gogoproto.stdduration) = true];
+}
