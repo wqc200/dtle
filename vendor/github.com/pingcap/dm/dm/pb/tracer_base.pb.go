@@ -8,7 +8,7 @@ import (
 	io "io"
 	math "math"
 
-	proto "github.com/gogo/protobuf/proto"
+	proto "github.com/gogo/protobufv131/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

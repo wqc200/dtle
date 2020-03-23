@@ -923,9 +923,7 @@ func (tr *TaskRunner) buildTaskConfig() *drivers.TaskConfig {
 		StdoutPath:       tr.logmonHookConfig.stdoutFifo,
 		StderrPath:       tr.logmonHookConfig.stderrFifo,
 		AllocID:          tr.allocID,
-		TaskConfig:       task.Config,
 		NetworkIsolation: tr.networkIsolationSpec,
-		StateDir:         tr.clientConfig.StateDir,
 	}
 }
 

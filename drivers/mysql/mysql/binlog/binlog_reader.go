@@ -36,13 +36,11 @@ import (
 	"github.com/pingcap/parser/ast"
 	_ "github.com/pingcap/tidb/types/parser_driver"
 
-	"github.com/actiontech/dtle/drivers/mysql/mysql"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/base"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/sql"
 	sqle "github.com/actiontech/dtle/drivers/mysql/mysql/sqle/inspector"
 	"github.com/actiontech/dtle/drivers/mysql/mysql/util"
-    utils	"github.com/actiontech/dtle/drivers/mysql/mysql"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/opentracing/opentracing-go"
 	dmrelay "github.com/pingcap/dm/relay"
@@ -50,6 +48,13 @@ import (
 	gomysql "github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 	"golang.org/x/net/context"
+)
+
+const (
+	StageFinishedReadingOneBinlogSwitchingToNextBinlog = "Finished reading one binlog; switching to next binlog"
+	StageRegisteringSlaveOnMaster                      = "Registering slave on master"
+	StageRequestingBinlogDump                          = "Requesting binlog dump"
+
 )
 
 // BinlogReader is a general interface whose implementations can choose their methods of reading
@@ -224,7 +229,7 @@ func NewMySQLReader(execCtx *common.ExecContext, cfg *config.MySQLDriverConfig, 
 		binlogReader.binlogSyncer = replication.NewBinlogSyncer(binlogSyncerConfig)
 	}
 
-	binlogReader.mysqlContext.Stage = mysql.StageRegisteringSlaveOnMaster
+	binlogReader.mysqlContext.Stage = StageRegisteringSlaveOnMaster
 
 	return binlogReader, err
 }
@@ -380,7 +385,7 @@ func (b *BinlogReader) ConnectBinlogStreamer(coordinates base.BinlogCoordinatesX
 			return err
 		}
 	}
-	b.mysqlContext.Stage = mysql.StageRequestingBinlogDump
+	b.mysqlContext.Stage = StageRequestingBinlogDump
 
 	return nil
 }
@@ -526,7 +531,7 @@ func (b *BinlogReader) handleEvent(ev *replication.BinlogEvent, entriesChannel c
 				}
 
 				for i, sql := range ddlInfo.sqls {
-					realSchema := utils.StringElse(ddlInfo.tables[i].Schema, currentSchema)
+					realSchema := util.StringElse(ddlInfo.tables[i].Schema, currentSchema)
 					tableName := ddlInfo.tables[i].Table
 					err = b.checkObjectFitRegexp(b.mysqlContext.ReplicateDoDb, realSchema, tableName)
 					if err != nil {
@@ -878,7 +883,7 @@ func (b *BinlogReader) DataStreamEvents(entriesChannel chan<- *BinlogEntry) erro
 					defer b.currentCoordinatesMutex.Unlock()
 					b.currentCoordinates.LogFile = string(rotateEvent.NextLogName)
 				}()
-				b.mysqlContext.Stage = mysql.StageFinishedReadingOneBinlogSwitchingToNextBinlog
+				b.mysqlContext.Stage = StageFinishedReadingOneBinlogSwitchingToNextBinlog
 				b.logger.Info("mysql.reader: Rotate to next log name: %s", rotateEvent.NextLogName)
 			} else {
 				b.logger.Warn("mysql.reader: fake rotate_event.")
@@ -1074,7 +1079,7 @@ func (b *BinlogReader) handleBinlogRowsEvent(ev *replication.BinlogEvent, txChan
 				}
 
 				for i, sql := range ddlInfo.sqls {
-					realSchema := utils.StringElse(ddlInfo.tables[i].Schema, currentSchema)
+					realSchema := util.StringElse(ddlInfo.tables[i].Schema, currentSchema)
 					tableName := ddlInfo.tables[i].Table
 
 					if b.skipQueryDDL(sql, realSchema, tableName) {

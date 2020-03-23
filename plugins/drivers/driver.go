@@ -219,8 +219,6 @@ type TaskConfig struct {
 	StdoutPath       string
 	StderrPath       string
 	AllocID          string
-	TaskConfig       map[string]interface{}
-	StateDir         string
 	NetworkIsolation *NetworkIsolationSpec
 }
 

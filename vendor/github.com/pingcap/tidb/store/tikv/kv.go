@@ -23,7 +23,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
+	"github.com/coreosv/etcd/clientv3"
 	"github.com/pingcap/errors"
 	"github.com/pingcap/failpoint"
 	pd "github.com/pingcap/pd/client"

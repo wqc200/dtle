@@ -25,7 +25,7 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 import expr "github.com/araddon/qlbridge/expr"
-import _ "github.com/gogo/protobuf/gogoproto"
+import _ "github.com/gogo/protobufv131/gogoproto"
 
 import io "io"
 import github_com_golang_protobuf_proto "github.com/golang/protobuf/proto"

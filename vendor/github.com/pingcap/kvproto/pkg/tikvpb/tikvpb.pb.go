@@ -10,7 +10,7 @@ import (
 
 	proto "github.com/golang/protobuf/proto"
 
-	_ "github.com/gogo/protobuf/gogoproto"
+	_ "github.com/gogo/protobufv131/gogoproto"
 
 	coprocessor "github.com/pingcap/kvproto/pkg/coprocessor"
 

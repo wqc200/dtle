@@ -10,7 +10,7 @@ import (
 
 	proto "github.com/golang/protobuf/proto"
 
-	_ "github.com/gogo/protobuf/gogoproto"
+	_ "github.com/gogo/protobufv131/gogoproto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

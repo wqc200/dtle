@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
+	"github.com/coreosv/etcd/clientv3"
 	"github.com/pingcap/errors"
 	"github.com/pingcap/tidb/util/logutil"
 	"go.uber.org/zap"

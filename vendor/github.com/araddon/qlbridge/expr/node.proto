@@ -2,9 +2,9 @@ syntax = "proto2";
 package expr;
 
 
-//  protoc --proto_path=$GOPATH/src:$GOPATH/src/github.com/gogo/protobuf/protobuf:. --gofast_out=. node.proto
+//  protoc --proto_path=$GOPATH/src:$GOPATH/src/github.com/gogo/protobufv131/protobuf:. --gofast_out=. node.proto
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/gogo/protobufv131/gogoproto/gogo.proto";
 
 option (gogoproto.marshaler_all) = true;
 option (gogoproto.sizer_all) = true;

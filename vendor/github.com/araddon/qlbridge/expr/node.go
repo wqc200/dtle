@@ -11,7 +11,7 @@ import (
 	"time"
 
 	u "github.com/araddon/gou"
-	"github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobufv131/proto"
 
 	"github.com/araddon/qlbridge/lex"
 	"github.com/araddon/qlbridge/value"

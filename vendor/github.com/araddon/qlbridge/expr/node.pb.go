@@ -29,7 +29,7 @@ package expr
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "github.com/gogo/protobuf/gogoproto"
+import _ "github.com/gogo/protobufv131/gogoproto"
 
 import github_com_golang_protobuf_proto "github.com/golang/protobuf/proto"
 

@@ -9,11 +9,9 @@ import (
 	"time"
 
 	"github.com/actiontech/dtle/client/fingerprint"
-	hclog "github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/go-hclog"
 
-	"github.com/mitchellh/mapstructure"
-
-	"math/rand"
+		"math/rand"
 
 	"errors"
 
@@ -284,11 +282,16 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if _, ok := d.tasks.Get(cfg.ID); ok {
 		return nil, nil, fmt.Errorf("task with ID %q already started", cfg.ID)
 	}
-	ctx := &common.ExecContext{cfg.JobName, cfg.TaskGroupName, 100 * 1024 * 1024, cfg.StateDir}
-	var driverConfig kafka3.KafkaConfig
-	if err := mapstructure.WeakDecode(cfg.TaskConfig, &driverConfig); err != nil {
+	ctx := &common.ExecContext{cfg.JobName, cfg.TaskGroupName, 100 * 1024 * 1024, "/opt/binilog"}
+	/*var driverConfig kafka3.KafkaConfig
+	if err := mapstructure.WeakDecode(cfg.DriverConfig, &driverConfig); err != nil {
 		return nil, nil, err
+	}*/
+	var driverConfig  kafka3.KafkaConfig
+	if err := cfg.DecodeDriverConfig(&driverConfig); err != nil {
+		return nil, nil, fmt.Errorf("failed to decode driver config: %v", err)
 	}
+
 
 	switch cfg.TaskGroupName {
 	case TaskTypeSrc:

@@ -23,9 +23,9 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/clientv3/concurrency"
-	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
+	"github.com/coreosv/etcd/clientv3"
+	"github.com/coreosv/etcd/clientv3/concurrency"
+	"github.com/coreosv/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/pingcap/errors"
 	"github.com/pingcap/parser/terror"
 	"github.com/pingcap/tidb/metrics"

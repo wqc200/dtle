@@ -10,14 +10,13 @@ import (
 	"time"
 
 	"github.com/actiontech/dtle/client/fingerprint"
+
+	"github.com/hashicorp/go-hclog"
+		"math/rand"
 	config "github.com/actiontech/dtle/drivers/mysql/mysql/config"
-	hclog "github.com/hashicorp/go-hclog"
-	"github.com/mitchellh/mapstructure"
-
-	"math/rand"
-
 	"github.com/actiontech/dtle/drivers/mysql/mysql/common"
-	"github.com/actiontech/dtle/drivers/mysql/mysql"
+	mysql "github.com/actiontech/dtle/drivers/mysql/mysql"
+//	"github.com/actiontech/dtle/drivers/mysql/mysql"
 	"github.com/actiontech/dtle/drivers/shared/eventer"
 	"github.com/actiontech/dtle/helper/pluginutils/loader"
 	"github.com/actiontech/dtle/nomad/structs"
@@ -131,8 +130,9 @@ type Driver struct {
 	taskName  string
 	allocID   string
 	node      *structs.Node
-	extractor *mysql.Extractor
+//	extractor *mysql.Extractor
 }
+
 
 func NewDriver(logger hclog.Logger) drivers.DriverPlugin {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -283,11 +283,20 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if _, ok := d.tasks.Get(cfg.ID); ok {
 		return nil, nil, fmt.Errorf("task with ID %q already started", cfg.ID)
 	}
-	var driverConfig config.MySQLDriverConfig
-	if err := mapstructure.WeakDecode(cfg.TaskConfig, &driverConfig); err != nil {
+	/*var driverConfig config.MySQLDriverConfig
+	if err := mapstructure.WeakDecode(cfg.DriverConfig, &driverConfig); err != nil {
 		return nil, nil, fmt.Errorf("failed to weakDecode TaskConfig: %v", err)
+	}*/
+/*	err:=dtleExec(cfg,&d.logger)
+	if  err!=nil{
+		return nil, nil, nil
+	}*/
+	var driverConfig config.MySQLDriverConfig
+	if err := cfg.DecodeDriverConfig(&driverConfig); err != nil {
+		return nil ,nil , fmt.Errorf("failed to decode driver config: %v", err)
 	}
-	ctx := &common.ExecContext{cfg.JobName, cfg.TaskGroupName, 100 * 1024 * 1024, cfg.StateDir}
+
+	ctx := &common.ExecContext{cfg.JobName, cfg.TaskGroupName, 100 * 1024 * 1024, "/opt/binlog"}
 	switch cfg.TaskGroupName {
 	case TaskTypeSrc:
 		{
@@ -295,25 +304,25 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 			// Create the extractor
 			e, err := mysql.NewExtractor(ctx, &driverConfig, d.logger)
 			if err != nil {
-				return nil, nil, fmt.Errorf("failed to create extractor  e: %v", err)
+				return  nil,nil,fmt.Errorf("failed to create extractor  e: %v", err)
 			}
 			go e.Run()
-			d.extractor = e
+			//d.extractor = e
 
 		}
 	case TaskTypeDest:
 		{
 			d.logger.Warn("NewApplier ReplicateDoDb: %v", driverConfig.ReplicateDoDb)
-			a, err := mysql.NewApplier(ctx, &driverConfig, &d.logger)
+			a, err := mysql.NewApplier(ctx, &driverConfig,d.logger)
 			if err != nil {
-				return nil, nil, fmt.Errorf("failed to create Applier  e: %v", err)
+				return nil,nil, fmt.Errorf("failed to create Applier  e: %v", err)
 			}
 			go a.Run()
 
 		}
 	default:
 		{
-			return nil, nil, fmt.Errorf("unknown processor type : %+v", cfg.TaskGroupName)
+			return nil,nil,fmt.Errorf("unknown processor type : %+v", cfg.TaskGroupName)
 		}
 	}
 	handle := drivers.NewTaskHandle(taskHandleVersion)

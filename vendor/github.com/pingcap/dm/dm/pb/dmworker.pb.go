@@ -9,7 +9,7 @@ import (
 	io "io"
 	math "math"
 
-	proto "github.com/gogo/protobuf/proto"
+	proto "github.com/gogo/protobufv131/proto"
 	grpc "google.golang.org/grpc"
 )
 
