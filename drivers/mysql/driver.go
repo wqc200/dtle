@@ -21,6 +21,11 @@ import (
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 	stand "github.com/nats-io/nats-streaming-server/server"
 	"net"
+	"net/http"
+	"github.com/julienschmidt/httprouter"
+	"io/ioutil"
+	"encoding/json"
+	"github.com/actiontech/dtle/drivers/mysql/route"
 )
 
 const (
@@ -189,6 +194,7 @@ type Driver struct {
 	logger hclog.Logger
 
 	stand *stand.StanServer
+	apiServer  *httprouter.Router
 
 	config *DriverConfig
 
@@ -271,6 +277,69 @@ func (d *Driver) SetupNatsServer(logger hclog.Logger) (err error)  {
 	d.stand = s
 	return nil
 }
+// decodeBody is used to decode a JSON request body
+func decodeBody(req *http.Request, out interface{}) error {
+	dec := json.NewDecoder(req.Body)
+	return dec.Decode(&out)
+}
+
+
+func updupJob(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+	var args route.JobRegisterRequest
+	if err := decodeBody(r, &args); err != nil {
+		//return nil, CodedError(400, err.Error())
+	}
+	if args.Job == nil {
+	//	return nil, CodedError(400, "Job must be specified")
+	}
+	nomadargs.Region = *args.Job.Region
+	nomadargs.Job.Region = args.Region
+	nomadargs.EnforceIndex = args.EnforceIndex
+	nomadargs.JobModifyIndex = *args.Job.ModifyIndex
+	nomadargs.Job.ID = args.Job.ID
+	nomadargs.Job.ModifyIndex = args.Job.ModifyIndex
+	nomadargs.Job.JobModifyIndex = args.Job.JobModifyIndex
+	//nomadargs.Job.Version
+	nomadargs.Job.Type = args.Job.Type
+	nomadargs.Job.Name = args.Job.Name
+	// nomadargs.Job.Affinities
+	//	nomadargs.Job.AllAtOnce = args.
+	nomadargs.Job.CreateIndex = args.Job.CreateIndex
+	nomadargs.Job.Datacenters = args.Job.Datacenters
+	for num, task := range args.Job.Tasks {
+		nomadargs.Job.TaskGroups[num].Name = &task.Type
+		nomadargs.Job.TaskGroups[num].Tasks[1].Driver = task.Driver
+		nomadargs.Job.TaskGroups[num].Tasks[1].Config = task.Config
+		nomadargs.Job.TaskGroups[num].Tasks[1].Leader = task.Leader
+		nomadargs.Job.TaskGroups[num].Tasks[1].Services[1].Name = task.NodeName
+		nomadargs.Job.TaskGroups[num].Tasks[1].Services[1].Id = task.NodeID
+	}
+
+
+
+
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	fmt.Fprintf(w, string(body))
+
+}
+
+func (d *Driver) SetupApiServer(logger hclog.Logger) (err error)  {
+
+	router := httprouter.New()
+
+	router.POST("/v1/jobs",updupJob)
+
+	http.ListenAndServe(":"+d.config.ApiPort, router)
+	//logger.()
+
+	logger.Info("Setup api server", "port", d.config.ApiPort)
+
+	d.apiServer = router
+	return nil
+}
 
 /*func NewMySQLDriver(ctx *DriverContext) Driver {
 	return &MySQLDriver{DriverContext: *ctx}
@@ -286,6 +355,7 @@ func (d *Driver) ConfigSchema() (*hclspec.Spec, error) {
 
 type DriverConfig struct {
 	NatsBind string `codec:"NatsBind"`
+	ApiPort string `codec:"ApiPort"`
 	NatsAdvertise string `codec:"NatsAdvertise"`
 	Consul []string `codec:"consul"`
 }
