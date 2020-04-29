@@ -1,4 +1,7 @@
 package route
+
+import "time"
+
 const (
 	JobTypeSync = "synchronous"
 )
@@ -213,15 +216,39 @@ type ObjectDiff struct {
 	Objects []*ObjectDiff
 }
 
-type PlanAnnotations struct {
-	DesiredTGUpdates map[string]*DesiredUpdates
+
+
+type NoamdNodeListStub struct {
+	Address               string
+	ID                    string
+	Datacenter            string
+	Name                  string
+	NodeClass             string
+	Version               string
+	Drain                 bool
+	SchedulingEligibility string
+	Status                string
+	StatusDescription     string
+	Drivers               map[string]*DriverInfo
+	CreateIndex           uint64
+	ModifyIndex           uint64
+}
+// regularly as driver health changes on the node.
+type DriverInfo struct {
+	Attributes        map[string]string
+	Detected          bool
+	Healthy           bool
+	HealthDescription string
+	UpdateTime        time.Time
 }
 
-type DesiredUpdates struct {
-	Ignore            uint64
-	Place             uint64
-	Migrate           uint64
-	Stop              uint64
-	InPlaceUpdate     uint64
-	DestructiveUpdate uint64
+type NodeListStub struct {
+	ID                string
+	Datacenter        string
+	Name              string
+	HTTPAddr          string
+	Status            string
+	StatusDescription string
+	CreateIndex       uint64
+	ModifyIndex       uint64
 }
