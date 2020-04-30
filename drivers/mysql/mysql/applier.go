@@ -277,10 +277,6 @@ func NewApplier(ctx *common.ExecContext, cfg *umconf.MySQLDriverConfig, logger h
 		printTps:                os.Getenv(g.ENV_PRINT_TPS) != "",
 		storeManager:            storeManager,
 	}
-	a.gtidSet, err = DtleParseMysqlGTIDSet(a.mysqlContext.Gtid)
-	if err != nil {
-		return nil, err
-	}
 	stubFullApplyDelayStr := os.Getenv(g.ENV_FULL_APPLY_DELAY)
 	if stubFullApplyDelayStr == "" {
 		a.stubFullApplyDelay = 0
@@ -309,6 +305,7 @@ func (a *Applier) updateGtidLoop() {
 		time.Sleep(updateGtidInterval)
 		if a.mysqlContext.Gtid != a.lastSavedGtid {
 			// TODO thread safety.
+			a.logger.Debug("SaveGtidForJob", "job", a.subject, "gtid", a.mysqlContext.Gtid)
 			err := a.storeManager.SaveGtidForJob(a.subject, a.mysqlContext.Gtid)
 			if err != nil {
 				a.onError(TaskStateDead, errors.Wrap(err, "SaveGtidForJob"))
@@ -358,10 +355,23 @@ func (a *Applier) MtsWorker(workerIndex int) {
 
 // Run executes the complete apply logic.
 func (a *Applier) Run() {
+	var err error
 	a.logger.Info("go WatchAndPutNats")
 	go a.storeManager.WatchAndPutNats(a.subject, a.mysqlContext.NatsAddr, a.shutdownCh, func(err error) {
 		a.onError(TaskStateDead, errors.Wrap(err, "WatchAndPutNats"))
 	})
+
+	err = dcommon.GetGtidFromConsul(a.storeManager, a.subject, a.logger, a.mysqlContext)
+	if err != nil {
+		a.onError(TaskStateDead, errors.Wrap(err, "GetGtidFromConsul"))
+		return
+	}
+
+	a.gtidSet, err = DtleParseMysqlGTIDSet(a.mysqlContext.Gtid)
+	if err != nil {
+		a.onError(TaskStateDead, errors.Wrap(err, "DtleParseMysqlGTIDSet"))
+		return
+	}
 
 	if a.printTps {
 		go func() {
@@ -493,6 +503,7 @@ func (a *Applier) executeWriteFuncs() {
 				a.rowCopyComplete <- true
 				a.logger.Info("mysql.applier: Rows copy complete.number of rows:%d", a.mysqlContext.TotalRowsReplay)
 				a.mysqlContext.Gtid = a.currentCoordinates.RetrievedGtidSet
+				a.logger.Info("mysql.applier: got gtid from extractor", "gtid", a.mysqlContext.Gtid)
 				var err error
 				a.gtidSet, err = DtleParseMysqlGTIDSet(a.mysqlContext.Gtid)
 				if err != nil {
@@ -1081,14 +1092,15 @@ func (a *Applier) initDBConnections() (err error) {
 		a.logger.Debug("mysql.applier. after createTableGtidExecutedV4")
 
 		for i := range a.dbs {
-			a.dbs[i].PsDeleteExecutedGtid, err = a.dbs[i].Db.PrepareContext(context.Background(), fmt.Sprintf("delete from %v.%v where job_name = '%s' and source_uuid = ?",
-				g.DtleSchemaName, g.GtidExecutedTableV4, a.subject))
+			a.dbs[i].PsDeleteExecutedGtid, err = a.dbs[i].Db.PrepareContext(context.Background(),
+				fmt.Sprintf("delete from %v.%v where job_name = ? and source_uuid = ?",
+				g.DtleSchemaName, g.GtidExecutedTableV4))
 			if err != nil {
 				return err
 			}
-			a.dbs[i].PsInsertExecutedGtid, err = a.dbs[i].Db.PrepareContext(context.Background(), fmt.Sprintf("replace into %v.%v "+
-				"(job_name,source_uuid,gtid,gtid_set) values ('%s', ?, ?, null)",
-				g.DtleSchemaName, g.GtidExecutedTableV4, a.subject))
+			a.dbs[i].PsInsertExecutedGtid, err = a.dbs[i].Db.PrepareContext(context.Background(),
+				fmt.Sprintf("replace into %v.%v (job_name,source_uuid,gtid,gtid_set) values (?, ?, ?, null)",
+				g.DtleSchemaName, g.GtidExecutedTableV4))
 			if err != nil {
 				return err
 			}
@@ -1405,7 +1417,7 @@ func (a *Applier) ApplyBinlogEvent(ctx context.Context, workerIdx int, binlogEnt
 	}
 	span.SetTag("after  transform  binlogEvent to sql  ", time.Now().UnixNano()/1e6)
 	a.logger.Debug("ApplyBinlogEvent. insert gno: %v", binlogEntry.Coordinates.GNO)
-	_, err = dbApplier.PsInsertExecutedGtid.Exec(binlogEntry.Coordinates.SID.Bytes(), binlogEntry.Coordinates.GNO)
+	_, err = dbApplier.PsInsertExecutedGtid.Exec(a.subject, binlogEntry.Coordinates.SID.Bytes(), binlogEntry.Coordinates.GNO)
 	if err != nil {
 		return err
 	}
