@@ -307,8 +307,10 @@ func (d *Driver) SetupApiServer(logger hclog.Logger) (err error)  {
 	router.POST("/v1/validate/job",route.ValidateJobRequest)
 	router.GET("/v1/nodes", route.NodesRequest)
 	router.GET("/v1/node/:nodeName/:type",route.NodeRequest)
+	router.DELETE("/v1/job/:jobId",route.JobDeleteRequest)
+	router.GET("/v1/job/:jobId",route.JobDetailRequest)
 	//router.POST("/v1/operator/",updupJob)
-	/*router.POST("/v1/job/renewal",updupJob)
+	/*
 	router.POST("/v1/job/info",updupJob)
 	*/
 	http.ListenAndServe(d.config.HostIp+":"+d.config.ApiPort, router)

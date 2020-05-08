@@ -416,5 +416,27 @@ func NodeRequest(w http.ResponseWriter, r *http.Request,ps httprouter.Params) {
 }
 
 
+func JobDetailRequest(w http.ResponseWriter, r *http.Request,ps httprouter.Params) {
+	jobId :=  ps.ByName("jobId")
+	url:="http://"+Host+":"+Port+"/v1/job/"+jobId
+	resp, err := http.Get(url)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	fmt.Fprintf(w, string(body))
+
+}
+
+func JobDeleteRequest(w http.ResponseWriter, r *http.Request,ps httprouter.Params) {
+	jobId :=  ps.ByName("jobId")
+	url:="http://"+Host+":"+Port+"/v1/job/"+jobId
+	req, _ := http.NewRequest("DELETE", url, nil)
+	res, _ := http.DefaultClient.Do(req)
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	fmt.Fprintf(w, string(body))
+}
 
 
